@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>បញ្ជីឈ្មោះសិស្សប្រព្រឹត្តខុសវិន័យសាលា - គ្រប់គ្រង ១២ខែ</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Khmer&family=Moul&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Khmer', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .font-moul {
+            font-family: 'Moul', serif;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        table, th, td {
+            border: 1px solid black !important;
+        }
+        th, td {
+            padding: 5px;
+            font-size: 13px;
+            color: black;
+        }
+        .editable-zone {
+            outline: none;
+            padding: 2px 5px;
+            transition: background 0.2s;
+        }
+        .editable-zone:hover {
+            background-color: #f0fdf4;
+            cursor: pointer;
+        }
+        .editable-zone:focus {
+            background-color: #e8f5e9;
+            border-bottom: 1px dashed #22c55e;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .print-container {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .editable-zone:hover, .editable-zone:focus {
+                background-color: transparent !important;
+                border: none !important;
+            }
+
+            /* ស្ទីលសម្រាប់គំនូរជីវចលរង្វង់ Loading */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 4px solid #1d4ed8;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .print-container {
+                box-shadow: none !important;
+                border: none !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+            .editable-zone:hover, .editable-zone:focus {
+                background-color: transparent !important;
+                border: none !important;
+            }
+            #splash-screen {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+<div id="splash-screen" class="fixed inset-0 bg-slate-900 flex flex-col justify-center items-center z-50 transition-opacity duration-1000">
+        <div class="text-center p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl max-w-md mx-4 animate-fade-in">
+            <div class="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg border-2 border-white/50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            </div>
+            
+            <h1 class="font-moul text-xl text-yellow-400 mb-2 tracking-wide leading-relaxed">វិទ្យាល័យព្រះនរោត្តម សីហមុនី</h1>
+            <h2 class="font-moul text-sm text-white mb-6 tracking-wide leading-relaxed">ប្រព័ន្ធគ្រប់គ្រងវិន័យសិស្សប្រចាំខែ</h2>
+            
+            <p class="text-xs text-gray-300 mb-6 italic">រៀបចំ និងបង្កើតដោយ៖ លោកគ្រូ ចែម ភាសាល បរិញ្ញាបត្រពត៌មានវិទ្យា</p>
+            
+            <div class="flex flex-col items-center gap-2">
+                <div class="loader"></div>
+                <span class="text-xs text-blue-300 font-sans mt-1">កំពុងដំណើរការប្រព័ន្ធ... <span id="countdown">5</span>ស</span>
+            </div>
+        </div>
+    </div>
+
+    <div id="main-content" class="opacity-0 transition-opacity duration-1000 pointer-events-none">
+
+    <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-md mb-6 no-print">
+        <div class="flex flex-col md:flex-row justify-between items-center border-b pb-4 mb-4 gap-4">
+            <h2 class="text-xl font-bold font-moul text-blue-800">ប្រព័ន្ធគ្រប់គ្រងវិន័យសិស្ស (បំបែក ១២ ខែដាច់ពីគ្នា)</h2>
+            
+            <div class="bg-amber-50 p-2 rounded border border-amber-300 flex items-center gap-2">
+                <label class="text-sm font-bold text-amber-900">សូមជ្រើសរើសខែគ្រប់គ្រង៖</label>
+                <select id="monthSelector" onchange="changeMonth()" class="p-2 border border-amber-450 rounded bg-white font-bold text-blue-900 cursor-pointer">
+                    <option value="មករា">ខែមករា</option>
+                    <option value="កុម្ភៈ">ខែកុម្ភៈ</option>
+                    <option value="មីនា">ខែមីនា</option>
+                    <option value="មេសា">ខែមេសា</option>
+                    <option value="ឧសភា">ខែឧសភា</option>
+                    <option value="មិថុនា" selected>ខែមិថុនា</option>
+                    <option value="កក្កដា">ខែកក្កដា</option>
+                    <option value="សីហា">ខែសីហា</option>
+                    <option value="កញ្ញា">ខែកញ្ញា</option>
+                    <option value="តុលា">ខែតុលា</option>
+                    <option value="វិច្ឆិកា">ខែវិច្ឆិកា</option>
+                    <option value="ធ្នូ">ខែធ្នូ</option>
+                </select>
+
+                <a href="index.html" class="btn-fancy bg-white/10 backdrop-blur-md text-blue-500 border border-blue-30 px-7 py-3.5 rounded-2xl font-semibold shadow-xl flex items-center gap-3 hover:bg-orange-500 hover:text-[#179BB5]">
+                <span class="text-2xl">🏛️</span> ទៅផ្ទាំងដើម
+            </a>
+            </div>
+        </div>
+        
+        <form id="studentForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded border border-gray-200 mb-4">
+            <input type="hidden" id="editIndex" value="-1">
+            <div>
+                <label class="block text-xs font-bold text-gray-700">គោត្តនាម-នាម</label>
+                <input type="text" id="name" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700">ភេទ</label>
+                <select id="gender" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+                    <option value="ប្រុស">ប្រុស</option>
+                    <option value="ស្រី">ស្រី</option>
+                    <option value=" ">ទទេ</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700">ថ្នាក់</label>
+                <input type="text" id="grade" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700">កំហុស</label>
+                <input type="text" id="mistake" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700">ចំនួន</label>
+                <input type="number" id="count" value="1" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700">ការពិន័យ</label>
+                <input type="text" id="action" value="អប់រំ" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700">កាលបរិច្ឆេទ</label>
+                <input type="text" id="date" placeholder="12.មិថុនា.2026" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+            </div>
+            <div>
+                <label class="block text-xs font-bold text-gray-700">ផ្សេងៗ</label>
+                <input type="text" id="other" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+            </div>
+            <div class="md:col-span-4 flex justify-end gap-2 border-t pt-3 mt-2">
+                <button type="button" onclick="clearForm()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm cursor-pointer">សម្អាត Form</button>
+                <button type="submit" id="submitBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm cursor-pointer">រក្សាទុក</button>
+            </div>
+        </form>
+
+        <div class="flex flex-wrap justify-between items-center gap-2 bg-blue-50 p-3 rounded border border-blue-200">
+            <div class="flex gap-2">
+                <button onclick="exportToExcel()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-bold cursor-pointer">📥 នាំចេញខែនេះទៅ Excel</button>
+                <button onclick="exportBackup()" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-bold cursor-pointer">💾 រក្សាទុកហ្វាល់ចម្លង (Backup)</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <label class="text-xs font-bold text-gray-700">នាំចូលហ្វាល់ចម្លងវិញ៖</label>
+                <input type="file" id="importFile" accept=".json" onchange="importBackup(event)" class="text-xs block w-full text-gray-500 file:mr-4 file:py-1 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer"/>
+            </div>
+            <div>
+                <button onclick="window.print()" class="px-5 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 text-xs font-bold cursor-pointer">🖨️ បោះពុម្ពលិខិត (Print)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="printArea" class="max-w-4xl mx-auto bg-white p-10 md:p-14 border border-gray-300 shadow-xl print-container text-black">
+        
+        <table style="width: 100%; border: none !important; margin-bottom: 20px;" class="excel-header-table">
+            <tr style="border: none !important;">
+                <td style="text-align: left; font-weight: bold; font-size: 12px; border: none !important; width: 50%; line-height: 1.5;">
+                    <br>ការិយាល័យ អប់រំ យុវជននិងកីឡាស្រុកជលគិរី<br>
+                    វិទ្យាល័យព្រះនរោត្តម សីហមុនី
+                </td>
+                <td style="text-align: center; font-family: 'Moul', serif; font-size: 13px; border: none !important; width: 50%; line-height: 1.8; vertical-align: top;">
+                    ព្រះរាជាណាចក្រកម្ពុជា<br>
+                    ជាតិ សាសនា ព្រះមហាក្សត្រ
+                </td>
+            </tr>
+        </table>
+
+        <div class="text-center my-6">
+            <h1 class="font-moul text-base tracking-wide">បញ្ជីឈ្មោះសិស្សប្រព្រឹត្តខុសវិន័យសាលា</h1>
+            <p id="currentMonthTitle" class="font-moul text-xs mt-2">ប្រចាំខែមិថុនា</p>
+        </div>
+
+        <table id="mainDataTable" class="w-full text-center">
+            <thead>
+                <tr class="bg-gray-100 font-bold">
+                    <td style="width: 45px; font-weight: bold; text-align: center;">ល.រ</td>
+                    <td style="font-weight: bold; text-align: center;">គោត្តនាម-នាម</td>
+                    <td style="width: 50px; font-weight: bold; text-align: center;">ភេទ</td>
+                    <td style="width: 60px; font-weight: bold; text-align: center;">ថ្នាក់</td>
+                    <td style="font-weight: bold; text-align: center;">កំហុស</td>
+                    <td style="width: 50px; font-weight: bold; text-align: center;">ចំនួន</td>
+                    <td style="width: 65px; font-weight: bold; text-align: center;">ការពិន័យ</td>
+                    <td style="width: 110px; font-weight: bold; text-align: center;">កាលបរិច្ឆេទ</td>
+                    <td style="width: 85px; font-weight: bold; text-align: center;">ផ្សេងៗ</td>
+                    <td class="no-print" style="width: 90px; text-align: center;">កែប្រែ</td>
+                </tr>
+            </thead>
+            <tbody id="studentTableBody">
+            </tbody>
+        </table>
+
+        <table style="width: 100%; border: none !important; margin-top: 40px;" class="excel-footer-table">
+            <tr style="border: none !important;">
+                <td style="border: none !important; width: 40%;"></td>
+                <td style="text-align: center; border: none !important; width: 60%; font-size: 14px; line-height: 1.7; white-space: nowrap;">
+                    <div contenteditable="true" id="khmerDate" class="editable-zone">ថ្ងៃអាទិត្យ ៧កើត ខែបឋមាសាឍ ឆ្នាំខាល ចត្វាស័ក ព.ស. ២៥៧០</div>
+                    <div contenteditable="true" id="solarDate" class="editable-zone">ស្រុកជលគិរី, ថ្ងៃទី២១ ខែមិថុនា ឆ្នាំ២០២៦</div>
+                    <div contenteditable="true" id="signatureTitle" class="editable-zone font-bold mt-1">អ្នកធ្វើតារាង</div>
+                    <br><br>
+                    <div contenteditable="true" id="signerName" class="editable-zone font-bold text-base">សូមបំពេញឈ្មោះ</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <script>
+
+// --- យន្តការគ្រប់គ្រង SPLASH SCREEN (៥ វិនាទី) ---
+        let timeLeft = 5;
+        const countdownEl = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            timeLeft--;
+            if(countdownEl) countdownEl.innerText = timeLeft;
+            
+            if(timeLeft <= 0) {
+                clearInterval(timer);
+                const splash = document.getElementById('splash-screen');
+                const mainContent = document.getElementById('main-content');
+                
+                // ធ្វើឱ្យ Splash Screen រលាយបាត់ (Fade Out)
+                splash.style.opacity = '0';
+                
+                setTimeout(() => {
+                    splash.style.display = 'none'; // បិទវាចោលតែម្តង
+                    
+                    // បង្ហាញផ្ទាំងកម្មវិធីធំមកវិញ (Fade In)
+                    mainContent.classList.remove('opacity-0');
+                    mainContent.classList.add('opacity-100');
+                    mainContent.classList.remove('pointer-events-none');
+                }, 1000); // រង់ចាំការធ្វើ Fade duration ១វិនាទីសិន
+            }
+        }, 1000);
+
+        // ទិន្នន័យគំរូដំបូងសម្រាប់ខែមិថុនា
+        const defaultJuneData = [
+            { name: "មន សុភ័ក្ត្រ", gender: "ប្រុស", grade: "99B", mistake: "លេងទូរស័ព្ទ", count: 1, action: "អប់រំ", date: "12.មិថុនា.2026", other: "" },
+            { name: "អឿន កែវឆាយ", gender: "ប្រុស", grade: "99A", mistake: "លេងទូរស័ព្ទ", count: 1, action: "អប់រំ", date: "12.មិថុនា.2026", other: "" },
+            { name: "សែន សុភ័ក្រ", gender: "ប្រុស", grade: "99A", mistake: "លេងទូរស័ព្ទ", count: 1, action: "អប់រំ", date: "12.មិថុនា.2026", other: "" }
+        ];
+
+        let currentMonth = "មិថុនា";
+        let students = [];
+
+        // មុខងារផ្ទុកទិន្នន័យតាមខែដែលបានជ្រើសរើស
+        function loadMonthData() {
+            currentMonth = document.getElementById('monthSelector').value;
+            document.getElementById('currentMonthTitle').innerText = "ប្រចាំខែ" + currentMonth;
+            
+            let storedData = localStorage.getItem('studentData_month_' + currentMonth);
+            
+            if (storedData) {
+                students = JSON.parse(storedData);
+            } else {
+                // ប្រសិនបើជាខែមិថុនា ឱ្យទាញទិន្នន័យគំរូ បើខែផ្សេងទៀតឱ្យទទេស្អាតសិន
+                students = (currentMonth === "មិថុនា") ? defaultJuneData : [];
+            }
+            renderTable();
+        }
+
+        function changeMonth() {
+            clearForm();
+            loadMonthData();
+        }
+
+        function toKhmerNumber(num) {
+            if (num === null || num === undefined || num === '') return '';
+            const khmerDigits = ['០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'];
+            return num.toString().split('').map(char => isNaN(parseInt(char)) ? char : khmerDigits[char]).join('');
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('studentTableBody');
+            tbody.innerHTML = '';
+
+            students.forEach((student, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="text-align: center;">${toKhmerNumber(index + 1)}</td>
+                    <td style="text-align: left; padding-left: 8px;">${student.name}</td>
+                    <td style="text-align: center;">${student.gender}</td>
+                    <td style="text-align: center;">${student.grade}</td>
+                    <td style="text-align: center;">${student.mistake}</td>
+                    <td style="text-align: center;">${toKhmerNumber(student.count)}</td>
+                    <td style="text-align: center;">${student.action}</td>
+                    <td style="text-align: center;">${toKhmerNumber(student.date)}</td>
+                    <td style="text-align: center;">${student.other}</td>
+                    <td class="no-print flex justify-center gap-1 border-none p-1">
+                        <button onclick="editStudent(${index})" class="px-2 py-0.5 bg-yellow-500 text-white rounded text-xs hover:bg-yellow-600 cursor-pointer">កែ</button>
+                        <button onclick="deleteStudent(${index})" class="px-2 py-0.5 bg-red-500 text-white rounded text-xs hover:bg-red-600 cursor-pointer">លុប</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // រក្សាទុកដាច់ដោយឡែកតាម Key នៃខែនីមួយៗ
+            localStorage.setItem('studentData_month_' + currentMonth, JSON.stringify(students));
+        }
+
+        document.getElementById('studentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const editIndex = parseInt(document.getElementById('editIndex').value);
+            const studentData = {
+                name: document.getElementById('name').value,
+                gender: document.getElementById('gender').value,
+                grade: document.getElementById('grade').value,
+                mistake: document.getElementById('mistake').value,
+                count: document.getElementById('count').value,
+                action: document.getElementById('action').value,
+                date: document.getElementById('date').value,
+                other: document.getElementById('other').value
+            };
+
+            if (editIndex === -1) {
+                students.push(studentData);
+            } else {
+                students[editIndex] = studentData;
+            }
+            clearForm();
+            renderTable();
+        });
+
+        function editStudent(index) {
+            const student = students[index];
+            document.getElementById('editIndex').value = index;
+            document.getElementById('name').value = student.name;
+            document.getElementById('gender').value = student.gender;
+            document.getElementById('grade').value = student.grade;
+            document.getElementById('mistake').value = student.mistake;
+            document.getElementById('count').value = student.count;
+            document.getElementById('action').value = student.action;
+            document.getElementById('date').value = student.date;
+            document.getElementById('other').value = student.other;
+
+            document.getElementById('submitBtn').innerText = "ធ្វើបច្ចុប្បន្នភាព";
+            document.getElementById('submitBtn').className = "px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-sm cursor-pointer";
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteStudent(index) {
+            if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យសិស្សនេះមែនទេ?")) {
+                students.splice(index, 1);
+                renderTable();
+            }
+        }
+
+        function clearForm() {
+            document.getElementById('studentForm').reset();
+            document.getElementById('editIndex').value = "-1";
+            document.getElementById('submitBtn').innerText = "រក្សាទុក";
+            document.getElementById('submitBtn').className = "px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm cursor-pointer";
+        }
+
+        function exportToExcel() {
+            let printArea = document.getElementById('printArea').cloneNode(true);
+            let noPrintElements = printArea.querySelectorAll('.no-print');
+            noPrintElements.forEach(el => el.remove());
+
+            printArea.querySelector('#khmerDate').innerText = document.getElementById('khmerDate').innerText;
+            printArea.querySelector('#solarDate').innerText = document.getElementById('solarDate').innerText;
+            printArea.querySelector('#signatureTitle').innerText = document.getElementById('signatureTitle').innerText;
+            printArea.querySelector('#signerName').innerText = document.getElementById('signerName').innerText;
+
+            let excelStyle = `
+                <style>
+                    body, table, td, th { font-family: 'Khmer OS Battambang', 'Khmer', sans-serif; font-size: 11pt; color: black; }
+                    table { border-collapse: collapse; width: 100%; }
+                    th, td { border: 1px solid #000000 !important; padding: 6px; vertical-align: middle; }
+                    thead tr { background-color: #f2f2f2 !important; font-weight: bold; }
+                    .excel-header-table td, .excel-footer-table td { border: none !important; font-size: 12pt; white-space: nowrap; }
+                    .font-moul { font-family: 'Khmer OS Muol Light', 'Moul', serif; font-weight: bold; text-align: center; }
+                </style>
+            `;
+
+            let excelTemplate = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head><meta charset="UTF-8">${excelStyle}</head>
+                <body><div>${printArea.innerHTML}</div></body>
+                </html>
+            `;
+
+            let blob = new Blob([excelTemplate], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'បញ្ជីឈ្មោះសិស្សប្រព្រឹត្តខុសវិន័យ_ខែ' + currentMonth + '.xls';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function exportBackup() {
+            let allData = {};
+            const months = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
+            months.forEach(m => {
+                let mData = localStorage.getItem('studentData_month_' + m);
+                if(mData) allData[m] = JSON.parse(mData);
+            });
+
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(allData, null, 4));
+            let downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", "ប្រព័ន្ធវិន័យ_backup_១២ខែ.json");
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+        }
+
+        function importBackup(event) {
+            const input = event.target;
+            const reader = new FileReader();
+            reader.onload = function() {
+                try {
+                    const importedData = JSON.parse(reader.result);
+                    if (typeof importedData === 'object' && !Array.isArray(importedData)) {
+                        for (let m in importedData) {
+                            localStorage.setItem('studentData_month_' + m, JSON.stringify(importedData[m]));
+                        }
+                        loadMonthData();
+                        alert("🎉 នាំចូលទិន្នន័យទាំង ១២ខែ ជោគជ័យ!");
+                    } else {
+                        alert("ទម្រង់ហ្វាល់ចាស់ ឬមិនត្រឹមត្រូវ!");
+                    }
+                } catch (e) {
+                    alert("កំហុសក្នុងការអានហ្វាល់!");
+                }
+            };
+            reader.readAsText(input.files[0]);
+        }
+
+        // ចាប់ផ្តើមផ្ទុកទិន្នន័យដំបូង
+        loadMonthData();
+    </script>
+</body>
+</html>

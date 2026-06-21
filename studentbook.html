@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រង និងបោះពុម្ពសៀវភៅតាមដានទំហំ A4</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Khmer&family=Moul&family=Siemreap&display=swap');
+
+        /* រចនាបថផ្ទាំងស្វាគមន៍មុនពេលដំណើរការ (Splash Screen) */
+        /* ----------------------------------------------------------- */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #002060, #0078d4);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            transition: opacity 0.8s ease, visibility 0.8s;
+        }
+
+        .splash-content {
+            text-align: center;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        .splash-creator {
+            font-family: 'Moul', serif;
+            font-size: 26px;
+            color: #fff2cc;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 20px;
+        }
+
+        .splash-title {
+            font-family: 'Siemreap', sans-serif;
+            font-size: 18px;
+            font-weight: bold;
+            opacity: 0.9;
+        }
+
+        /* ចលនាផ្ទុកទិន្នន័យ (Loader) */
+        .loader {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid #fff;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-top: 30px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* លាក់ផ្ទាំង Splash Screen ពេលអស់ម៉ោង */
+        .hide-splash {
+            opacity: 0;
+            visibility: hidden;
+        }
+        /* ការកំណត់ទូទៅលើអេក្រង់កុំព្យូទ័រ */
+        body {
+            font-family: 'Siemreap', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* ផ្ទាំងតារាងគ្រប់គ្រងទិន្នន័យរួម */
+        .dashboard-container {
+            background-color: #fff;
+            width: 1200px;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+        }
+
+        .dashboard-title {
+            font-family: 'Moul', serif;
+            color: #002060;
+            font-size: 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            border-bottom: 2px solid #002060;
+            padding-bottom: 10px;
+        }
+
+        /* របារសម្រាប់ដូរថ្ងៃខែរួម ការតម្រឹម និងឈ្មោះគ្រូ */
+        .bulk-date-container {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .bulk-date-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .bulk-date-container label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .bulk-date-container input {
+            padding: 6px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: 'Siemreap', sans-serif;
+            font-size: 13px;
+            width: 250px;
+        }
+
+        /* ស្ទីលប្រអប់ជ្រើសរើសការតម្រឹម */
+        .align-select {
+            padding: 6px 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-family: 'Siemreap', sans-serif;
+            font-size: 13px;
+            background-color: #fff;
+            cursor: pointer;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 6px;
+            align-items: center;
+        }
+
+        /* រចនាបថតារាងបញ្ជីសិស្ស */
+        .editable-table-wrapper {
+            overflow-x: auto;
+            max-height: 280px;
+            border: 1px solid #1f7246;
+            margin-bottom: 15px;
+        }
+
+        .editable-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            min-width: 1750px;
+        }
+
+        .editable-table th, .editable-table td {
+            border: 1px solid #1f7246;
+            padding: 6px;
+            text-align: center;
+        }
+
+        .editable-table th {
+            background-color: #e2efda;
+            color: #1f7246;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .editable-table tbody tr {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .editable-table tbody tr:hover {
+            background-color: #f2f2f2;
+        }
+
+        .editable-table tbody tr.selected-row {
+            background-color: #cfe2ff !important;
+        }
+
+        .editable-table td input[type="text"], .editable-table td input[type="number"] {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-family: 'Siemreap', sans-serif;
+            font-size: 12px;
+            color: #000;
+        }
+
+        .editable-table td input:focus {
+            outline: 2px solid #0078d4;
+            background-color: #fff;
+        }
+
+        .section-tag {
+            font-weight: bold;
+            font-size: 11px;
+            background-color: #fff2cc;
+        }
+
+        /* ស្ទីលប៊ូតុង Upload ក្នុងតារាង */
+        .photo-upload-btn {
+            font-size: 11px;
+            padding: 2px 5px;
+            cursor: pointer;
+        }
+
+        /* ----------------------------------------------------------- */
+        /* រចនាបថរូបរាងសៀវភៅតាមដានទំហំ A4 ផ្ដេក */
+        /* ----------------------------------------------------------- */
+        .print-area-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .report-card {
+            background-color: #fff;
+            width: 297mm;  
+            height: 210mm; 
+            padding: 15mm;
+            box-sizing: border-box;
+            display: flex;
+            gap: 15mm;
+            page-break-after: always; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        .left-panel, .right-panel {
+            width: 50%;
+            box-sizing: border-box;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .left-border-box {
+            border: 3px solid #000;
+            padding: 12px;
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .header-khmer {
+            font-family: 'Moul', serif;
+            color: #002060;
+            text-align: center;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+
+        .sub-header {
+            font-family: 'Moul', serif;
+            color: #002060;
+            text-align: center;
+            font-size: 11px;
+            margin-bottom: 12px;
+        }
+
+        .main-title {
+            font-family: 'Moul', serif;
+            color: #0020ff;
+            text-align: center;
+            font-size: 18px;
+            margin: 8px 0;
+        }
+
+        .school-name {
+            font-family: 'Siemreap', sans-serif;
+            font-weight: bold;
+            color: #002060;
+            text-align: center;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+
+        /* ប្រអប់រូបថតសិស្ស (៤x៦) និងមុខងារអូសផ្លាស់ទី */
+        .photo-box {
+            border: 1px solid #7f7f7f;
+            width: 75px;
+            height: 95px;
+            position: absolute;
+            top: 45px;
+            left: 12px;
+            overflow: hidden; /* លាក់ផ្នែកដែលលើសពេលពង្រីករូប */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #fafafa;
+        }
+
+        .photo-box span {
+            font-size: 10px;
+            color: #a6a6a6;
+            text-align: center;
+            padding: 2px;
+            pointer-events: none;
+        }
+
+        /* រូបភាពដែលអាចអូស ផ្លាស់ទី និងពង្រីកបាន */
+        .draggable-img {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+            transform-origin: center center;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-top: 35px;
+            font-size: 12px;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            padding: 4px 2px;
+            vertical-align: top;
+        }
+
+        .info-label { color: #7f7f7f; width: 35%; }
+        .info-dots { color: #0020ff; width: 5%; text-align: center; }
+        .info-value { color: #002060; font-weight: bold; width: 60%; }
+        .info-value-red { color: red; font-weight: bold; }
+
+        .footer-attendance {
+            margin-top: 15px;
+            border-top: 2px solid #000;
+            padding-top: 5px;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+
+        .comment-section { margin-top: 10px; font-size: 12px; }
+        .line-dots { border-bottom: 1px dotted #000; margin-top: 12px; height: 5px; }
+        
+        /* ផ្នែកថ្ងៃខែឆ្នាំខាងក្រោម */
+        .date-signature-block {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            font-size: 11px;
+            line-height: 1.6;
+            width: 100%;
+        }
+        
+        .date-text-line { width: 100%; }
+        .signature-title-space { margin-top: 8px; font-weight: bold; text-align: left; }
+        .signature-role { font-family: 'Moul', serif; color: #0020ff; margin-top: 4px; text-align: left; }
+
+        /* តារាងពិន្ទុផ្នែកខាងស្តាំ */
+        .score-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .score-table th, .score-table td { border: 1px solid #000; text-align: center; padding: 3.5px; }
+        .score-table th { background-color: #fff2cc; font-weight: bold; }
+        .bg-yellow { background-color: #fff2cc; }
+        .text-blue { color: #0020ff; font-weight: bold; }
+        .text-red { color: red; font-weight: bold; font-size: 13px; }
+        
+        .right-footer-block {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            font-size: 11px;
+            line-height: 1.6;
+            width: 100%;
+        }
+
+        .teacher-role-title { font-family: 'Moul', serif; color: #0020ff; margin-top: 8px; font-weight: bold; text-align: right; }
+        .teacher-name-display { font-family: 'Siemreap', sans-serif; font-weight: bold; color: #002060; margin-top: 45px; font-size: 12px; text-align: right; }
+        
+        /* ស្ទីលប៊ូតុង */
+        .btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Siemreap', sans-serif;
+            font-weight: bold;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-excel-out { background-color: #1f7246; color: white; }
+        .btn-excel-in { background-color: #0078d4; color: white; position: relative; }
+        .btn-add { background-color: #e1e1e1; color: black; }
+        .btn-print { background-color: #d9381e; color: white; padding: 12px 30px; font-size: 14px; }
+        
+        .file-input { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+        .hint-text { font-size: 11px; color: #666; margin-top: -5px; margin-bottom: 10px; }
+
+        /* ការកំណត់ពិសេសពេលបោះពុម្ព */
+        @media print {
+            .dashboard-container, .hint-text, .btn-print, .bulk-date-container { display: none !important; }
+            body { padding: 0; margin: 0; background-color: #fff; }
+            @page { size: A4 landscape; margin: 0; }
+            .report-card { box-shadow: none; margin: 0; page-break-after: always; }
+        }
+        /* បន្ថែមចលនា Smooth សម្រាប់ប៊ូតុងទាំងអស់ */
+        .btn-fancy {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-fancy:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        .btn-fancy:active {
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+<div id="splash-screen">
+    <div class="splash-content">
+        <div class="splash-creator">បង្កើតដោយ៖ លោកគ្រូ ចែម ភាសាល បរិញ្ញាបត្រពត៌មានវិទ្យា</div>
+        <div class="splash-title">ប្រព័ន្ធគ្រប់គ្រង និងបោះពុម្ពសៀវភៅតាមដានលទ្ធផលការសិក្សា</div>
+        <center><div class="loader"></div></center>
+    </div>
+</div>
+
+<div class="dashboard-container">
+    <div class="dashboard-title">ប្រព័ន្ធគ្រប់គ្រងសៀវភៅតាមដានទំហំ A4 (បន្ថែមមុខងារ Upload និងផ្លាស់ទីរូបថតសិស្ស)</div>
+    
+    <div class="bulk-date-container">
+        <div class="bulk-date-group">
+            <label for="bulk-khmer-date">📅 ថ្ងៃខែឆ្នាំចន្ទគតិរួម៖ </label>
+            <input type="text" id="bulk-khmer-date" value="ថ្ងៃ...................កើត ខែ..............ឆ្នាំ..............ព.ស.២៥......" oninput="generateReportCards()">
+        </div>
+        <div class="bulk-date-group">
+            <label for="bulk-solar-date">📅 ថ្ងៃទីខែឆ្នាំសកលរួម៖ </label>
+            <input type="text" id="bulk-solar-date" value="ថ្ងៃទី........ ខែ................. ឆ្នាំ 20......" oninput="generateReportCards()">
+        </div>
+        <div class="bulk-date-group">
+            <label for="bulk-date-align">📐 ការតម្រឹមអត្ថបទថ្ងៃខែ៖ </label>
+            <select id="bulk-date-align" class="align-select" onchange="generateReportCards()">
+                <option value="left" selected>⬅️ ត្រឹមខាងឆ្វេង (Left)</option>
+                <option value="center">↕️ ត្រឹមចំកណ្តាល (Center)</option>
+                <option value="right">➡️ ត្រឹមខាងស្តាំ (Right)</option>
+            </select>
+        </div>
+        <div class="bulk-date-group">
+            <label for="bulk-teacher-name">✍️ ឈ្មោះគ្រូទទួលបន្ទក៖ </label>
+            <input type="text" id="bulk-teacher-name" value="ឡុង ណារិន" oninput="generateReportCards()">
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="btn btn-excel-out" onclick="exportToExcel()">📤 នាំទិន្នន័យចេញជា Excel</button>
+        <button class="btn btn-excel-in">
+            📥 នាំទិន្នន័យចូលពី Excel
+            <input type="file" class="file-input" id="excel-file" accept=".xlsx, .xls" onchange="importFromExcel(event)">
+        </button>
+        <button class="btn btn-add" onclick="addNewRow()">➕ បន្ថែមជួរសិស្សថ្មី</button>
+        <a href="index.html" class="btn-fancy bg-white/10 backdrop-blur-md text-blue-500 border border-blue-30 px-7 py-3.5 rounded-2xl font-semibold shadow-xl flex items-center gap-3 hover:bg-orange-500 hover:text-[#179BB5]">
+                <span class="text-2xl">🏛️</span> ទៅផ្ទាំងដើម
+            </a>
+        <div style="margin-left: auto;">
+            <input type="checkbox" id="check-all" onchange="toggleSelectAll(this)" checked> 
+            <label for="check-all" style="font-size: 13px; font-weight: bold; cursor: pointer;">ជ្រើសរើសសិស្សទាំងអស់សម្រាប់បោះពុម្ព</label>
+        </div>
+    </div>
+    
+    <div class="hint-text">💡 <b>ណែនាំពីរបៀបរៀបចំរូបថត៖</b> បន្ទាប់ពី Upload រូបថតសិស្សរួច លោកគ្រូអ្នកគ្រូអាច <b>«ចុចអូស (Drag)»</b> លើរូបថតក្នុងសន្លឹកបោះពុម្ពខាងក្រោមដើម្បីប្ដូរទីតាំង និង <b>«វិលកង់ម៉ៅស៍ (Scroll)»</b> ដើម្បីពង្រីក/បង្រួមរូបថតឱ្យស្អាតសមល្មម។</div>
+
+    <div class="editable-table-wrapper">
+        <table class="editable-table">
+            <thead>
+                <tr>
+                    <th colspan="3" class="section-tag">ជ្រើសរើស & រូបថត</th>
+                    <th colspan="6" class="section-tag">ព័ត៌មានទូទៅរបស់សិស្ស</th>
+                    <th colspan="2" class="section-tag">អវត្តមាន</th>
+                    <th colspan="11" class="section-tag">ពិន្ទុតាមមុខវិជ្ជា</th>
+                    <th class="section-tag">លទ្ធផល</th>
+                </tr>
+                <tr>
+                    <th style="width: 40px;">បោះពុម្ព</th>
+                    <th style="width: 90px;">រូបថត (៤x៦)</th>
+                    <th style="width: 70px;">ប្រចាំខែ</th>
+                    <th style="width: 60px;">អត្តលេខ</th>
+                    <th style="width: 130px;">ឈ្មោះសិស្ស</th>
+                    <th style="width: 50px;">ភេទ</th>
+                    <th style="width: 90px;">ថ្ងៃកំណើត</th>
+                    <th style="width: 150px;">ទីកន្លែងកំណើត</th>
+                    <th style="width: 150px;">ព័ត៌មានអាណាព្យាបាល</th>
+                    <th style="width: 45px;">មានច្បាប់</th>
+                    <th style="width: 45px;">អត់ច្បាប់</th>
+                    <th>ភាសាខ្មែរ</th>
+                    <th>សំណេរ-គណិត</th>
+                    <th>ប្រវត្តិ</th>
+                    <th>ភូមិវិទ្យា</th>
+                    <th>គណិត</th>
+                    <th>រូបវិទ្យា</th>
+                    <th>គីមីវិទ្យា</th>
+                    <th>ជីវវិទ្យា</th>
+                    <th>ផែនដី</th>
+                    <th>ភាសាបរទេស</th>
+                    <th>កសិកម្ម</th>
+                    <th style="width: 65px;">ចំណាត់ថ្នាក់</th>
+                </tr>
+            </thead>
+            <tbody id="student-list-body">
+                <tr onclick="highlightRow(this)">
+                    <td onclick="event.stopPropagation();"><input type="checkbox" class="print-selector" checked onchange="generateReportCards()"></td>
+                    <td onclick="event.stopPropagation();">
+                        <input type="file" accept="image/*" class="photo-upload-btn" onchange="previewStudentPhoto(this)">
+                        <input type="hidden" class="col-photo-base64" value="">
+                    </td>
+                    <td><input type="text" class="col-month" value="ខែ ឧសភា" oninput="generateReportCards()"></td>
+                    <td><input type="text" class="col-id" value="0001" oninput="generateReportCards()"></td>
+                    <td><input type="text" class="col-name" value="កាត់ សុធារី" oninput="generateReportCards()"></td>
+                    <td><input type="text" class="col-gender" value="ស្រី" oninput="generateReportCards()"></td>
+                    <td><input type="text" class="col-dob" value="30-09-2011" oninput="generateReportCards()"></td>
+                    <td><input type="text" class="col-pob" value="ព្រែកក្ដាម - ពញាឮ - កំពង់ឆ្នាំង" oninput="generateReportCards()"></td>
+                    <td><input type="text" class="col-parents" value="ឪ: ហោ កាត់ / ម្តាយ: ប៉ុល យ៉ែម" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-abs-y" value="0" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-abs-n" value="12" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s1" value="75" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s4" value="28" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s5" value="25" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s6" value="24" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s7" value="80" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s8" value="26" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s9" value="18" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s10" value="27" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s11" value="19" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s12" value="40" oninput="generateReportCards()"></td>
+                    <td><input type="number" class="col-s15" value="38" oninput="generateReportCards()"></td>
+                    <td><input type="text" class="col-rank" value="05" oninput="generateReportCards()"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <button class="btn btn-print" onclick="window.print()">🖨️ បោះពុម្ពសៀវភៅតាមដានសិស្សដែលបានជ្រើសរើស (A4)</button>
+</div>
+
+<div class="print-area-wrapper" id="print-area-zone"></div>
+
+<script>
+
+    let lastHighlighted = null;
+    // វត្ថុសម្រាប់រក្សាទុកព័ត៌មានបម្លាស់ទី និងទំហំរូបថត (Position & Scale Trackers)
+    let imageStates = {};
+// មុខងារ Splash Screen៖ លាក់ផ្ទាំងស្វាគមន៍ដោយស្វ័យប្រវត្តបន្ទាប់ពី ៥ វិនាទី (5000ms)
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            const splash = document.getElementById('splash-screen');
+            splash.classList.add('hide-splash');
+        }, 5000); 
+    });
+
+    function highlightRow(row) {
+        if(lastHighlighted) lastHighlighted.classList.remove('selected-row');
+        lastHighlighted = row;
+        row.classList.add('selected-row');
+    }
+
+    function toggleSelectAll(master) {
+        let checkboxes = document.querySelectorAll('.print-selector');
+        checkboxes.forEach(cb => cb.checked = master.checked);
+        generateReportCards();
+    }
+
+    // មុខងារអានរូបថតដែលបាន Upload រួចបម្លែងជា Base64
+    function previewStudentPhoto(input) {
+        if (input.files && input.files[0]) {
+            let reader = new FileReader();
+            reader.onload = function (e) {
+                let tr = input.closest('tr');
+                tr.querySelector('.col-photo-base64').value = e.target.result;
+                generateReportCards();
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function addNewRow() {
+        let tbody = document.getElementById('student-list-body');
+        let count = tbody.querySelectorAll('tr').length + 1;
+        let newRow = document.createElement('tr');
+        newRow.onclick = function() { highlightRow(this); };
+        newRow.innerHTML = `
+            <td onclick="event.stopPropagation();"><input type="checkbox" class="print-selector" checked onchange="generateReportCards()"></td>
+            <td onclick="event.stopPropagation();">
+                <input type="file" accept="image/*" class="photo-upload-btn" onchange="previewStudentPhoto(this)">
+                <input type="hidden" class="col-photo-base64" value="">
+            </td>
+            <td><input type="text" class="col-month" value="ខែ ឧសភា" oninput="generateReportCards()"></td>
+            <td><input type="text" class="col-id" value="000${count}" oninput="generateReportCards()"></td>
+            <td><input type="text" class="col-name" value="សិស្សថ្មីទី ${count}" oninput="generateReportCards()"></td>
+            <td><input type="text" class="col-gender" value="ប្រុស" oninput="generateReportCards()"></td>
+            <td><input type="text" class="col-dob" value="01-01-2011" oninput="generateReportCards()"></td>
+            <td><input type="text" class="col-pob" value="" oninput="generateReportCards()"></td>
+            <td><input type="text" class="col-parents" value="" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-abs-y" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-abs-n" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s1" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s4" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s5" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s6" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s7" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s8" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s9" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s10" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s11" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s12" value="0" oninput="generateReportCards()"></td>
+            <td><input type="number" class="col-s15" value="0" oninput="generateReportCards()"></td>
+            <td><input type="text" class="col-rank" value="-" oninput="generateReportCards()"></td>
+        `;
+        tbody.appendChild(newRow);
+        highlightRow(newRow);
+        generateReportCards();
+    }
+
+    // បង្កើតសន្លឹកកាតតាមដានសិស្សទំហំ A4
+    function generateReportCards() {
+        let printZone = document.getElementById('print-area-zone');
+        printZone.innerHTML = ''; 
+
+        let khmerDateValue = document.getElementById('bulk-khmer-date').value;
+        let solarDateValue = document.getElementById('bulk-solar-date').value;
+        let selectedAlign = document.getElementById('bulk-date-align').value;
+        let teacherNameValue = document.getElementById('bulk-teacher-name').value;
+
+        let rows = document.querySelectorAll('#student-list-body tr');
+        let scoreIds = [1, 4, 5, 6, 7, 8, 9, 10, 11, 12, 15];
+
+        rows.forEach(row => {
+            let isChecked = row.querySelector('.print-selector').checked;
+            if (!isChecked) return;
+
+            let month = row.querySelector('.col-month').value;
+            let id = row.querySelector('.col-id').value;
+            let name = row.querySelector('.col-name').value;
+            let gender = row.querySelector('.col-gender').value;
+            let dob = row.querySelector('.col-dob').value;
+            let pob = row.querySelector('.col-pob').value;
+            let parents = row.querySelector('.col-parents').value;
+            let abs_y = parseInt(row.querySelector('.col-abs-y').value) || 0;
+            let abs_n = parseInt(row.querySelector('.col-abs-n').value) || 0;
+            let rank = row.querySelector('.col-rank').value;
+            let photoData = row.querySelector('.col-photo-base64').value;
+
+            let total = 0;
+            let scoreValues = {};
+            scoreIds.forEach(sid => {
+                let sval = parseFloat(row.querySelector('.col-s' + sid).value) || 0;
+                scoreValues[sid] = sval;
+                total += sval;
+            });
+            let avg = total / scoreIds.length;
+            let totalGrade = avg >= 50 ? 'ល្អណាស់' : avg >= 45 ? 'ល្អបង្គួរ' : avg >= 35 ? 'មធ្យម' : avg >= 25 ? 'ខ្សោយ' : 'ធ្លាក់';
+
+            // បង្កើតកូដសម្គាល់សម្រាប់សិស្សម្នាក់ៗដើម្បីគ្រប់គ្រងរូបភាព
+            let studentKey = "student_" + id;
+            if (!imageStates[studentKey]) {
+                imageStates[studentKey] = { x: 0, y: 0, scale: 1 };
+            }
+            let state = imageStates[studentKey];
+
+            // បង្កើតផ្ទាំងរូបថត
+            let photoHTML = `<span>ថតរូប<br>៤x៦</span>`;
+            if (photoData) {
+                photoHTML = `<img src="${photoData}" class="draggable-img" data-key="${studentKey}" 
+                    style="transform: translate(${state.x}px, ${state.y}px) scale(${state.scale}); width: 100%; height: auto;">`;
+            }
+
+            let cardHTML = `
+            <div class="report-card">
+                <div class="left-panel">
+                    <div class="left-border-box">
+                        <div class="header-khmer">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                        <div class="sub-header">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                        <div class="photo-box">${photoHTML}</div>
+                        <div class="main-title">សៀវភៅតាមដានការសិក្សា</div>
+                        <div class="school-name">វិទ្យាល័យព្រះនរោត្តម សីហមុនី</div>
+
+                        <table class="info-table">
+                            <tr><td class="info-label" style="color: red;">មធ្យមភាគប្រចាំ</td><td class="info-dots">:</td><td class="info-value-red">${month}</td></tr>
+                            <tr><td class="info-label">អត្តលេខ</td><td class="info-dots">:</td><td class="info-value" style="color: red;">${id}</td></tr>
+                            <tr><td class="info-label">សិស្សឈ្មោះ</td><td class="info-dots">:</td><td class="info-value"><span>${name}</span> <span style="float: right; font-weight: normal; font-size: 11px;">-ភេទ: <span>${gender}</span></span></td></tr>
+                            <tr><td class="info-label">ថ្ងៃខែឆ្នាំកំណើត</td><td class="info-dots">:</td><td class="info-value">${dob}</td></tr>
+                            <tr><td class="info-label">ទីកន្លែងកំណើត</td><td class="info-dots">:</td><td class="info-value">${pob}</td></tr>
+                            <tr><td class="info-label">ព័ត៌មានអាណាព្យាបាល</td><td class="info-dots">:</td><td class="info-value">${parents}</td></tr>
+                            <tr><td class="info-label">អាសយដ្ឋានបច្ចុប្បន្ន</td><td class="info-dots">:</td><td class="info-value">${pob}</td></tr>
+                        </table>
+
+                        <div class="footer-attendance">
+                            <span>អវត្តមាន: <span>${abs_y + abs_n}</span> ដង</span>
+                            <span>-មានច្បាប់: <span>${abs_y}</span> ដង</span>
+                            <span>-ឥតច្បាប់: <span>${abs_n}</span> ដង</span>
+                        </div>
+                    </div>
+                    <div class="comment-section">
+                        <span style="font-weight: bold;">មតិផ្ទាល់របស់អាណាព្យាបាល៖</span>
+                        <div class="line-dots"></div>
+                        <div class="line-dots"></div>
+                    </div>
+                    
+                    <div class="date-signature-block">
+                        <div class="date-text-line" style="text-align: ${selectedAlign};">${khmerDateValue}</div>
+                        <div class="date-text-line" style="margin-top: 4px; text-align: ${selectedAlign};">${solarDateValue}</div>
+                        <div class="signature-title-space" style="text-align: ${selectedAlign};">បានឃើញ និងឯកភាព</div>
+                        <div class="signature-role" style="text-align: ${selectedAlign};">នាយកសាលា</div>
+                    </div>
+                </div>
+
+                <div class="right-panel">
+                    <table class="score-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2" style="width: 8%;">លរ</th>
+                                <th rowspan="2" style="width: 37%;">មុខវិជ្ជា</th>
+                                <th colspan="3" style="width: 40%;">ពិន្ទុ</th>
+                                <th rowspan="2" style="width: 15%;">ផ្សេងៗ</th>
+                            </tr>
+                            <tr>
+                                <th style="width: 15%;">អតិបរមា</th>
+                                <th style="width: 15%;">ពិន្ទុបាន</th>
+                                <th style="width: 10%;">និទ្ទេស</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td style="text-align: left;">ភាសាខ្មែរ</td><td><b>100</b></td><td class="text-blue">${scoreValues[1]}</td><td class="text-blue">${scoreValues[1]>25?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            <tr><td>2</td><td style="text-align: left;">តែងសេចក្តី</td><td><b>60</b></td><td></td><td></td><td></td></tr>
+                            <tr><td>3</td><td style="text-align: left;">សរសេរតាមអាន</td><td><b>40</b></td><td></td><td></td><td></td></tr>
+                            <tr><td>4</td><td style="text-align: left;">សំណេរ-គណិតវិទ្យា</td><td><b>35</b></td><td class="text-blue">${scoreValues[4]}</td><td class="text-blue">${scoreValues[4]>15?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            <tr><td>5</td><td style="text-align: left;">ប្រវត្តិវិទ្យា</td><td><b>33</b></td><td class="text-blue">${scoreValues[5]}</td><td class="text-blue">${scoreValues[5]>15?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            <tr><td>6</td><td style="text-align: left;">ភូមិវិទ្យា</td><td><b>32</b></td><td class="text-blue">${scoreValues[6]}</td><td class="text-blue">${scoreValues[6]>15?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            <tr><td>7</td><td style="text-align: left;">គណិតវិទ្យា</td><td><b>100</b></td><td class="text-blue">${scoreValues[7]}</td><td class="text-blue">${scoreValues[7]>25?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            <tr><td>8</td><td style="text-align: left;">រូបវិទ្យា</td><td><b>35</b></td><td class="text-blue">${scoreValues[8]}</td><td class="text-blue">${scoreValues[8]>15?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            <tr><td>9</td><td style="text-align: left;">គីមីវិទ្យា</td><td><b>25</b></td><td class="text-blue">${scoreValues[9]}</td><td class="text-blue">${scoreValues[9]>10?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            <tr><td>10</td><td style="text-align: left;">ជីវវិទ្យា</td><td><b>35</b></td><td class="text-blue">${scoreValues[10]}</td><td class="text-blue">${scoreValues[10]>15?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            <tr><td>11</td><td style="text-align: left;">ផែនដី</td><td><b>25</b></td><td class="text-blue">${scoreValues[11]}</td><td class="text-blue">${scoreValues[11]>10?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            <tr><td>12</td><td style="text-align: left;">ភាសាបរទេស</td><td><b>50</b></td><td class="text-blue">${scoreValues[12]}</td><td class="text-blue">${scoreValues[12]>20?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            <tr><td>13</td><td style="text-align: left;">បច្ចេកវិទ្យា</td><td><b>50</b></td><td></td><td></td><td></td></tr>
+                            <tr><td>14</td><td style="text-align: left;">លំនឹងជីវិត</td><td><b>50</b></td><td></td><td></td><td></td></tr>
+                            <tr><td>15</td><td style="text-align: left;">កសិកម្ម</td><td><b>50</b></td><td class="text-blue">${scoreValues[15]}</td><td class="text-blue">${scoreValues[15]>20?'មធ្យម':'ខ្សោយ'}</td><td></td></tr>
+                            
+                            <tr class="bg-yellow">
+                                <td colspan="2" style="font-weight: bold;">ពិន្ទុសរុប</td>
+                                <td colspan="2" class="text-blue">${total}</td>
+                                <td style="font-weight: bold;">ចំណាត់ថ្នាក់</td>
+                                <td class="text-red">${rank}</td>
+                            </tr>
+                            <tr class="bg-yellow">
+                                <td colspan="2" style="font-weight: bold;">មធ្យមភាគ</td>
+                                <td colspan="2" class="text-blue">${avg.toFixed(2)}</td>
+                                <td style="font-weight: bold;">និទ្ទេស</td>
+                                <td class="text-red">${totalGrade}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="right-footer-block">
+                        <div style="text-align: ${selectedAlign};">${khmerDateValue}</div>
+                        <div style="margin-top: 4px; text-align: ${selectedAlign};">${solarDateValue}</div>
+                        <div class="teacher-role-title" style="text-align: ${selectedAlign};">គ្រូទទួលបន្ទុកថ្នាក់</div>
+                        <div class="teacher-name-display" style="text-align: ${selectedAlign};">${teacherNameValue}</div>
+                    </div>
+                </div>
+            </div>
+            `;
+            printZone.innerHTML += cardHTML;
+        });
+
+        initImageInteractions(); // ហៅដំណើរការមុខងារ Drag & Resize រូបភាព
+    }
+
+    // មុខងារចាត់ចែងការ Drag អូសផ្លាស់ទី និង Scroll ពង្រីកបង្រួមរូបភាព
+    function initImageInteractions() {
+        let draggableImgs = document.querySelectorAll('.draggable-img');
+        
+        draggableImgs.forEach(img => {
+            let isDragging = false;
+            let startX, startY;
+            let key = img.getAttribute('data-key');
+
+            // ១. មុខងារ Drag (ចុចអូសផ្លាស់ទី)
+            img.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                isDragging = true;
+                startX = e.clientX - imageStates[key].x;
+                startY = e.clientY - imageStates[key].y;
+            });
+
+            window.addEventListener('mousemove', function(e) {
+                if (!isDragging) return;
+                imageStates[key].x = e.clientX - startX;
+                imageStates[key].y = e.clientY - startY;
+                img.style.transform = `translate(${imageStates[key].x}px, ${imageStates[key].y}px) scale(${imageStates[key].scale})`;
+            });
+
+            window.addEventListener('mouseup', function() {
+                isDragging = false;
+            });
+
+            // ២. មុខងារ Zoom (វិលកង់ម៉ៅស៍ដើម្បីពង្រីក/បង្រួម)
+            img.addEventListener('wheel', function(e) {
+                e.preventDefault();
+                let scaleAmount = 0.05;
+                if (e.deltaY < 0) {
+                    imageStates[key].scale += scaleAmount; // ពង្រីក
+                } else {
+                    imageStates[key].scale = Math.max(0.2, imageStates[key].scale - scaleAmount); // បង្រួម (មិនឱ្យតូចជាង 0.2 ឡើយ)
+                }
+                img.style.transform = `translate(${imageStates[key].x}px, ${imageStates[key].y}px) scale(${imageStates[key].scale})`;
+            });
+        });
+    }
+
+    // មុខងារនាំទិន្នន័យចេញ (Export Excel)
+    function exportToExcel() {
+        let rows = document.querySelectorAll('#student-list-body tr');
+        let data = [];
+        rows.forEach(row => {
+            data.push({
+                "មធ្យមភាគប្រចាំខែ": row.querySelector('.col-month').value,
+                "អត្តលេខ": row.querySelector('.col-id').value,
+                "ឈ្មោះសិស្ស": row.querySelector('.col-name').value,
+                "ភេទ": row.querySelector('.col-gender').value,
+                "ថ្ងៃខែឆ្នាំកំណើត": row.querySelector('.col-dob').value,
+                "ទីកន្លែងកំណើត": row.querySelector('.col-pob').value,
+                "ព័ត៌មានអាណាព្យាបាល": row.querySelector('.col-parents').value,
+                "អវត្តមានមានច្បាប់": row.querySelector('.col-abs-y').value,
+                "អវត្តមានអត់ច្បាប់": row.querySelector('.col-abs-n').value,
+                "ចំណាត់ថ្នាក់": row.querySelector('.col-rank').value,
+                "ភាសាខ្មែរ": row.querySelector('.col-s1').value,
+                "សំណេរ_គណិត": row.querySelector('.col-s4').value,
+                "ប្រវត្តិវិទ្យា": row.querySelector('.col-s5').value,
+                "ភូមិវិទ្យា": row.querySelector('.col-s6').value,
+                "គណិតវិទ្យា": row.querySelector('.col-s7').value,
+                "រូបវិទ្យា": row.querySelector('.col-s8').value,
+                "គីមីវិទ្យា": row.querySelector('.col-s9').value,
+                "ជីវវិទ្យា": row.querySelector('.col-s10').value,
+                "ផែនដី": row.querySelector('.col-s11').value,
+                "ភាសាបរទេស": row.querySelector('.col-s12').value,
+                "កសិកម្ម": row.querySelector('.col-s15').value
+            });
+        });
+        let ws = XLSX.utils.json_to_sheet(data);
+        let wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "បញ្ជីសិស្ស");
+        XLSX.writeFile(wb, "បញ្ជីសិស្ស_មានរូបថត.xlsx");
+    }
+
+    // មុខងារនាំទិន្នន័យចូល (Import Excel)
+    function importFromExcel(event) {
+        let file = event.target.files[0];
+        if (!file) return;
+
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            let data = new Uint8Array(e.target.result);
+            let workbook = XLSX.read(data, {type: 'array'});
+            let sheet = workbook.Sheets[workbook.SheetNames[0]];
+            let jsonData = XLSX.utils.sheet_to_json(sheet);
+
+            if(jsonData.length > 0) {
+                let tbody = document.getElementById('student-list-body');
+                tbody.innerHTML = ''; 
+
+                jsonData.forEach((row) => {
+                    let newRow = document.createElement('tr');
+                    newRow.onclick = function() { highlightRow(this); };
+                    newRow.innerHTML = `
+                        <td onclick="event.stopPropagation();"><input type="checkbox" class="print-selector" checked onchange="generateReportCards()"></td>
+                        <td onclick="event.stopPropagation();">
+                            <input type="file" accept="image/*" class="photo-upload-btn" onchange="previewStudentPhoto(this)">
+                            <input type="hidden" class="col-photo-base64" value="">
+                        </td>
+                        <td><input type="text" class="col-month" value="${row["មធ្យមភាគប្រចាំខែ"] || ''}" oninput="generateReportCards()"></td>
+                        <td><input type="text" class="col-id" value="${row["អត្តលេខ"] || ''}" oninput="generateReportCards()"></td>
+                        <td><input type="text" class="col-name" value="${row["ឈ្មោះសិស្ស"] || ''}" oninput="generateReportCards()"></td>
+                        <td><input type="text" class="col-gender" value="${row["ភេទ"] || ''}" oninput="generateReportCards()"></td>
+                        <td><input type="text" class="col-dob" value="${row["ថ្ងៃខែឆ្នាំកំណើត"] || ''}" oninput="generateReportCards()"></td>
+                        <td><input type="text" class="col-pob" value="${row["ទីកន្លែងកំណើត"] || ''}" oninput="generateReportCards()"></td>
+                        <td><input type="text" class="col-parents" value="${row["ព័ត៌មានអាណាព្យាបាល"] || ''}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-abs-y" value="${row["អវត្តមានមានច្បាប់"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-abs-n" value="${row["អវត្តមានអត់ច្បាប់"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s1" value="${row["ភាសាខ្មែរ"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s4" value="${row["សំណេរ_គណិត"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s5" value="${row["ប្រវត្តិវិទ្យា"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s6" value="${row["ភូមិវិទ្យា"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s7" value="${row["គណិតវិទ្យា"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s8" value="${row["រូបវិទ្យា"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s9" value="${row["គីមីវិទ្យា"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s10" value="${row["ជីវវិទ្យា"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s11" value="${row["ផែនដី"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s12" value="${row["ភាសាបរទេស"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="number" class="col-s15" value="${row["កសិកម្ម"] || 0}" oninput="generateReportCards()"></td>
+                        <td><input type="text" class="col-rank" value="${row["ចំណាត់ថ្នាក់"] || '-'}" oninput="generateReportCards()"></td>
+                    `;
+                    tbody.appendChild(newRow);
+                });
+
+                highlightRow(tbody.querySelector('tr'));
+                generateReportCards();
+                alert(`📥 បាននាំចូលទិន្នន័យសិស្សជោគជ័យ!`);
+            }
+        };
+        reader.readAsArrayBuffer(file);
+        event.target.value = '';
+    }
+
+    // ដំណើរការដំបូង
+    highlightRow(document.querySelector('#student-list-body tr'));
+    generateReportCards();
+</script>
+
+</body>
+</html>

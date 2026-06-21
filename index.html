@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងរដ្ឋបាល</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;700&family=Moul&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Kantumruy Pro', sans-serif; }
+        .khmer-moul { font-family: 'Moul', serif; }
+        .drag-handle { cursor: move; }
+        
+        /* បន្ថែមចលនា Smooth សម្រាប់ប៊ូតុងទាំងអស់ */
+        .btn-fancy {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-fancy:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        .btn-fancy:active {
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 select-none">
+
+    <header class="bg-gradient-to-r from-[#179BB5] to-[#127d92] text-white py-5 px-8 flex items-center gap-5 shadow-lg">
+        <div class="w-16 h-16 bg-[#C48B58] rounded-full border-2 border-white/50 flex items-center justify-center overflow-hidden shadow-inner">
+            <span class="text-xs text-center font-bold">LOGO</span>
+        </div>
+        <div>
+            <h1 class="khmer-moul text-2xl tracking-wide">គ្រប់គ្រងរដ្ឋបាល</h1>
+            <p class="text-xs opacity-80 mt-1 font-light italic">បណ្តុំរដ្ឋបាលថ្នាក់រៀនសតវត្សទី២១</p>
+        </div>
+    </header>
+
+    <section class="relative h-[600px] bg-cover bg-center flex flex-col items-center justify-center text-white px-4" 
+             style="background-image: linear-gradient(rgba(15, 23, 42, 0.7), rgba(15, 23, 42, 0.7)), url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1920');">
+        
+        <h2 class="khmer-moul text-4xl md:text-5xl mb-12 tracking-wider drop-shadow-lg">ផ្ទាំងរដ្ឋបាល</h2>
+
+        
+
+        <div class="flex flex-wrap justify-center gap-5 max-w-5xl mb-6">
+            <a href="certificate.html" class="btn-fancy bg-white/10 backdrop-blur-md text-white border border-white/30 px-7 py-3.5 rounded-2xl font-semibold shadow-xl flex items-center gap-3 hover:bg-white hover:text-[#179BB5]">
+                <span class="text-2xl">🏛️</span> ធ្វើបណ្ណសរសើរ
+            </a>
+            <a href="student-id.html" class="btn-fancy bg-white/10 backdrop-blur-md text-white border border-white/30 px-7 py-3.5 rounded-2xl font-semibold shadow-xl flex items-center gap-3 hover:bg-white hover:text-[#179BB5]">
+                <span class="text-2xl">🆔</span> ធ្វើកាតសិស្ស
+            </a>
+            <a href="studentbook.html" class="btn-fancy bg-white/10 backdrop-blur-md text-white border border-white/30 px-7 py-3.5 rounded-2xl font-semibold shadow-xl flex items-center gap-3 hover:bg-white hover:text-[#179BB5]">
+                <span class="text-2xl">📚</span> សៀវភៅតាមដាន
+            </a>
+            <a href="studentloo.html" class="btn-fancy bg-white/10 backdrop-blur-md text-white border border-white/30 px-7 py-3.5 rounded-2xl font-semibold shadow-xl flex items-center gap-3 hover:bg-white hover:text-[#179BB5]">
+                <span class="text-2xl">⚙️</span> សិស្សគេចម៉ោង
+            </a>
+            <a href="#" class="btn-fancy bg-white/10 backdrop-blur-md text-white border border-white/30 px-7 py-3.5 rounded-2xl font-semibold shadow-xl flex items-center gap-3 hover:bg-white hover:text-[#179BB5]">
+                <span class="text-2xl">🛠️</span> អប់រំបច្ចេកទេស
+            </a>
+        </div>
+
+        <div class="mt-4">
+            <a href="#" class="btn-fancy bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-4 rounded-2xl font-bold shadow-2xl flex items-center gap-3 border border-amber-400/50">
+                ⭐ វណ្ណកម្មឯកឧត្តមបណ្ឌិតសភាចារ្យឧបនាយករដ្ឋមន្ត្រី
+            </a>
+        </div>
+    </section>
+
+    <div id="timerWidget" class="fixed bottom-8 right-8 z-50 bg-white border border-slate-200 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.2)] w-64 overflow-hidden ring-1 ring-black/5">
+        <div id="timerHeader" class="drag-handle bg-gradient-to-r from-[#179BB5] to-[#127d92] text-white px-4 py-3 text-xs font-bold flex items-center justify-between shadow-md">
+            <span class="flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-300 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+                </span>
+                រយៈពេលប្រើប្រាស់
+            </span>
+            <button id="resetTimerBtn" class="bg-white/20 hover:bg-red-500 p-1.5 rounded-lg transition-colors duration-300" title="Reset">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
+                </svg>
+            </button>
+        </div>
+        <div class="p-6 text-center">
+            <div id="timeDisplay" class="text-4xl font-black text-slate-800 tracking-tighter font-mono">
+                00:00:00
+            </div>
+            <div class="flex justify-between px-2 mt-2 text-[9px] uppercase tracking-widest font-bold text-slate-400">
+                <span>Hours</span>
+                <span>Mins</span>
+                <span>Secs</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Timer Logic
+        let totalSeconds = 0;
+        const timeDisplay = document.getElementById('timeDisplay');
+        const resetBtn = document.getElementById('resetTimerBtn');
+
+        function updateTimer() {
+            totalSeconds++;
+            let hours = Math.floor(totalSeconds / 3600);
+            let minutes = Math.floor((totalSeconds % 3600) / 60);
+            let seconds = totalSeconds % 60;
+            timeDisplay.innerText = 
+                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        setInterval(updateTimer, 1000);
+        resetBtn.addEventListener('click', () => { totalSeconds = -1; updateTimer(); });
+
+        // Draggable Logic
+        const widget = document.getElementById('timerWidget');
+        const header = document.getElementById('timerHeader');
+        let isDragging = false;
+        let startX, startY, initialLeft, initialTop;
+
+        const startDrag = (e) => {
+            isDragging = true;
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            startX = clientX;
+            startY = clientY;
+            const rect = widget.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+            widget.style.bottom = 'auto';
+            widget.style.right = 'auto';
+            widget.style.left = initialLeft + 'px';
+            widget.style.top = initialTop + 'px';
+            widget.classList.add('scale-105', 'rotate-1');
+        };
+
+        const onDrag = (e) => {
+            if (!isDragging) return;
+            const clientX = e.clientX || e.touches[0].clientX;
+            const clientY = e.clientY || e.touches[0].clientY;
+            widget.style.left = (initialLeft + (clientX - startX)) + 'px';
+            widget.style.top = (initialTop + (clientY - startY)) + 'px';
+        };
+
+        const stopDrag = () => { 
+            isDragging = false; 
+            widget.classList.remove('scale-105', 'rotate-1');
+        };
+
+        header.addEventListener('mousedown', startDrag);
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', stopDrag);
+        header.addEventListener('touchstart', startDrag);
+        document.addEventListener('touchmove', onDrag);
+        document.addEventListener('touchend', stopDrag);
+    </script>
+
+</body>
+</html>

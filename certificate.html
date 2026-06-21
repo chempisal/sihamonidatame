@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធប័ណ្ណសរសើរ អនឡាញ - ជំនាន់ព្រីនបានច្រើននាក់</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Khmer&family=Moul&family=Siemreap&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .font-moul { font-family: 'Moul', cursive; }
+        .font-siemreap { font-family: 'Siemreap', sans-serif; }
+        
+        @page { size: A4 landscape; margin: 0; }
+        body { font-family: 'Siemreap', sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; user-select: none; }
+
+        /* កុងតេន័រសម្រាប់បង្ហាញលើអេក្រង់ */
+        .preview-mode #certificate-render-zone {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .certificate-container {
+            width: 297mm; height: 210mm; background-color: white;
+            position: relative; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            overflow: hidden; page-break-after: always;
+        }
+
+        /* ស៊ុមប័ណ្ណ */
+        .border-frame {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://drive.google.com/file/d/1299bUlCixByaxepjDdeZJtVYRr9xuZuZ/view?usp=sharing');
+            background-size: 100% 100%; background-repeat: no-repeat;
+            pointer-events: none; z-index: 10;
+        }
+
+        .content-area { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; }
+
+        /* ធាតុដែលអាចអូសទាញបាន */
+        .draggable {
+            position: absolute; cursor: move; padding: 4px;
+            border: 1px dashed transparent; transition: border 0.1s;
+        }
+        .draggable:hover { border-color: #3b82f6; background-color: rgba(59, 130, 246, 0.05); }
+        
+        /* មុខងារពន្លាត (Resizable) ឆ្វេង-ស្តាំ */
+        .resizable {
+            resize: horizontal;
+            overflow: auto;
+        }
+        .resizable::-webkit-scrollbar { width: 0; height: 0; }
+        
+        .selected { border: 2px solid #2563eb !important; background-color: rgba(59, 130, 246, 0.08) !important; }
+
+        /* ប្រអប់លេខចំណាត់ថ្នាក់ពិសេស */
+        .rank-badge-box {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: move;
+            border: 2px dashed #9ca3af;
+            background-color: rgba(249, 250, 251, 0.6);
+            transition: border 0.2s;
+        }
+        .rank-badge-box:hover { border-color: #ef4444; }
+        
+        /* រូបភាពខាងក្រោយលេខ */
+        .rank-bg-img {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: contain;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        /* លេខដែលនៅលើរូបភាព */
+        .rank-text-front {
+            position: relative;
+            z-index: 2;
+            font-family: 'Moul', cursive;
+            color: #dc2626;
+            text-shadow: 2px 2px 0px white, -2px -2px 0px white, 2px -2px 0px white, -2px 2px 0px white;
+            text-align: center;
+            width: 100%;
+            outline: none;
+        }
+
+        /* ផ្স্থানীয়បង្ហាញព័ត៌មានអ្នកបង្កើត */
+        #welcome-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(15, 23, 42, 0.95); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+        .fade-out { opacity: 0; visibility: hidden; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .no-print { display: none !important; }
+            .certificate-container { box-shadow: none; margin: 0 !important; }
+            .draggable { border: none !important; background: transparent !important; resize: none !important; }
+            .rank-badge-box { border: none !important; background: transparent !important; resize: none !important; }
+            .rank-text-front { text-shadow: 2px 2px 0px white, -2px -2px 0px white, 2px -2px 0px white, -2px 2px 0px white; }
+            /* លាក់ប័ណ្ណណាដែលមិនបានជ្រើសរើសពេលព្រីន */
+            .cert-page { display: block !important; }
+            .cert-page.hidden-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="preview-mode">
+    <div id="welcome-overlay">
+        <div class="text-center animate-bounce">
+            <i class="fa-solid fa-print text-5xl text-amber-500 mb-4"></i>
+        </div>
+        <h1 class="font-moul text-2xl md:text-3xl text-white tracking-wide mb-2">
+            ប្រព័ន្ធប័ណ្ណសរសើរអនឡាញ (ជំនាន់បោះពុម្ពច្រើននាក់)
+        </h1>
+        <p class="font-siemreap text-lg text-amber-400">
+            អភិវឌ្ឍដោយ៖ <span class="font-moul text-xl text-white ml-1">លោកគ្រូ ចែម ភាសាល</span>
+        </p>
+        <div class="mt-6 w-32 bg-gray-700 h-1 rounded-full overflow-hidden">
+            <div class="bg-amber-500 h-full animate-[pulse_1s_infinite] w-full"></div>
+        </div>
+    </div>
+
+    <!-- របារឧបករណ៍គ្រប់គ្រង -->
+    <div class="no-print max-w-[297mm] mx-auto mb-6 bg-white p-4 rounded-xl shadow-lg border border-gray-200">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex flex-wrap items-center gap-3">
+                <span class="font-bold text-gray-700"><i class="fa-solid fa-file-image"></i> រូបភាព៖</span>
+                <label class="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-sm transition">
+                    ប្តូរស៊ុម <input type="file" accept="image/*" class="hidden" onchange="uploadFile(event, 'frame')">
+                </label>
+                <label class="cursor-pointer bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1.5 rounded text-sm transition">
+                    ប្តូរ Logo <input type="file" accept="image/*" class="hidden" onchange="uploadFile(event, 'logo')">
+                </label>
+                <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white px-3 py-1.5 rounded text-sm transition">
+                    Upload រូបក្រោយលេខ <input type="file" accept="image/*" class="hidden" onchange="uploadFile(event, 'rank_bg')">
+                </label>
+                <a href="index.html" class="btn-fancy bg-white/10 backdrop-blur-md text-blue-500 border border-blue-30 px-7 py-3.5 rounded-2xl font-semibold shadow-xl flex items-center gap-3 hover:bg-orange-500 hover:text-[#179BB5]">
+                <span class="text-2xl">🏛️</span> ទៅផ្ទាំងដើម
+            </a>
+            </div>
+
+            <div class="flex items-center gap-2 border-l pl-4">
+                <span class="font-bold text-gray-700"><i class="fa-solid fa-font"></i> ទំហំអក្សរ៖</span>
+                <input type="number" id="font-size-input" min="10" max="120" value="16" oninput="updateFontSizeFromInput()" class="w-16 p-1.5 border rounded text-center bg-gray-50 font-bold text-blue-600 focus:outline-none">
+                <span class="text-sm font-bold text-gray-500">px</span>
+                <button onclick="changeFontSize('increase')" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded border font-bold text-lg">+</button>
+                <button onclick="changeFontSize('decrease')" class="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded border font-bold text-lg">-</button>
+            </div>
+
+            <div class="flex items-center gap-2 border-l pl-4">
+                <button onclick="saveTemplate()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> រក្សាទុកគំរូ
+                </button>
+                <button onclick="loadTemplate()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-bold shadow-md transition flex items-center gap-2">
+                    <i class="fa-solid fa-folder-open"></i> ទាញយកគំរូ
+                </button>
+            </div>
+
+            <button onclick="printSelectedCertificates()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition flex items-center gap-2">
+                <i class="fa-solid fa-print"></i> បោះពុម្ពប័ណ្ណដែលបានជ្រើសរើស
+            </button>
+        </div>
+    </div>
+
+    <!-- តារាងគ្រប់គ្រងទិន្នន័យសិស្ស -->
+    <div class="no-print max-w-[297mm] mx-auto mb-6 bg-white p-5 rounded-xl shadow-lg border border-gray-200">
+        <div class="flex justify-between items-center mb-3">
+            <h2 class="font-moul text-sm text-blue-800 flex items-center gap-2">
+                <i class="fa-solid fa-users"></i> តារាងគ្រប់គ្រងទិន្នន័យសិស្ស (គ្រីស <i class="fa-regular fa-square-check"></i> លើសិស្សដើម្បីព្រីនជាដុំ)
+            </h2>
+            <div class="flex items-center gap-4">
+                <label class="flex items-center gap-1 text-sm font-bold text-gray-600 cursor-pointer">
+                    <input type="checkbox" id="select-all-students" onchange="toggleSelectAll(this)" class="w-4 h-4 rounded text-blue-600"> ជ្រើសរើសទាំងអស់
+                </label>
+                <div class="flex items-center gap-2 border-l pl-4">
+                    <label class="cursor-pointer bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-file-import"></i> នាំទិន្នន័យចូល (CSV)
+                        <input type="file" id="csv-file-input" accept=".csv" class="hidden" onchange="importCSV(event)">
+                    </label>
+                    <button onclick="downloadSampleCSV()" class="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                        <i class="fa-solid fa-download"></i> ទាញយកទម្រង់គំរូ CSV
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="bg-gray-100 text-gray-700 font-bold border-b border-gray-300">
+                        <th class="p-2 border-r text-center w-12">ជ្រើសរើស</th>
+                        <th class="p-2 border-r text-center w-10">ល.រ</th>
+                        <th class="p-2 border-r">ឈ្មោះសិស្ស</th>
+                        <th class="p-2 border-r w-20 text-center">ភេទ</th>
+                        <th class="p-2 border-r w-16 text-center">ថ្ងៃទី</th>
+                        <th class="p-2 border-r w-24 text-center">ខែ</th>
+                        <th class="p-2 border-r w-20 text-center">ឆ្នាំកំណើត</th>
+                        <th class="p-2 border-r w-24 text-center">ថ្នាក់ទី</th>
+                        <th class="p-2 border-r w-24 text-center">លេខឌីជីថល</th>
+                    </tr>
+                </thead>
+                <tbody id="student-table-body">
+                    <!-- សិស្សលំដាប់គំរូទី១ ដល់ ទី៥ -->
+                    <tr class="border-b hover:bg-gray-50 student-row">
+                        <td class="p-2 border-r text-center"><input type="checkbox" checked class="student-select w-4 h-4"></td>
+                        <td class="p-2 border-r text-center font-bold text-gray-500 index-zone">1</td>
+                        <td class="p-1 border-r"><input type="text" value="សង់ សៀវហេង" class="w-full p-1 border rounded bg-transparent text-blue-700 font-bold name-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="ប្រុស" class="w-full p-1 border rounded text-center bg-transparent gender-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="២៤" class="w-full p-1 border rounded text-center bg-transparent day-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="មេសា" class="w-full p-1 border rounded text-center bg-transparent month-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="២០១៤" class="w-full p-1 border rounded text-center bg-transparent year-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="៧&quot;C&quot;" class="w-full p-1 border rounded text-center bg-transparent class-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="១" class="w-full p-1 border rounded text-center bg-transparent text-red-600 font-bold rank-field"></td>
+                    </tr>
+                    <tr class="border-b hover:bg-gray-50 student-row">
+                        <td class="p-2 border-r text-center"><input type="checkbox" checked class="student-select w-4 h-4"></td>
+                        <td class="p-2 border-r text-center font-bold text-gray-500 index-zone">2</td>
+                        <td class="p-1 border-r"><input type="text" value="ចាន់ ម៉ារីយ៉ា" class="w-full p-1 border rounded bg-transparent text-blue-700 font-bold name-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="ស្រី" class="w-full p-1 border rounded text-center bg-transparent gender-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="០៥" class="w-full p-1 border rounded text-center bg-transparent day-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="កញ្ញា" class="w-full p-1 border rounded text-center bg-transparent month-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="២០១៣" class="w-full p-1 border rounded text-center bg-transparent year-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="៨&quot;A&quot;" class="w-full p-1 border rounded text-center bg-transparent class-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="២" class="w-full p-1 border rounded text-center bg-transparent text-red-600 font-bold rank-field"></td>
+                    </tr>
+                    <tr class="border-b hover:bg-gray-50 student-row">
+                        <td class="p-2 border-r text-center"><input type="checkbox" checked class="student-select w-4 h-4"></td>
+                        <td class="p-2 border-r text-center font-bold text-gray-500 index-zone">3</td>
+                        <td class="p-1 border-r"><input type="text" value="លី ម៉េងហុង" class="w-full p-1 border rounded bg-transparent text-blue-700 font-bold name-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="ប្រុស" class="w-full p-1 border rounded text-center bg-transparent gender-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="១២" class="w-full p-1 border rounded text-center bg-transparent day-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="ធ្នូ" class="w-full p-1 border rounded text-center bg-transparent month-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="២០១៤" class="w-full p-1 border rounded text-center bg-transparent year-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="៧&quot;C&quot;" class="w-full p-1 border rounded text-center bg-transparent class-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="៣" class="w-full p-1 border rounded text-center bg-transparent text-red-600 font-bold rank-field"></td>
+                    </tr>
+                    <tr class="border-b hover:bg-gray-50 student-row">
+                        <td class="p-2 border-r text-center"><input type="checkbox" checked class="student-select w-4 h-4"></td>
+                        <td class="p-2 border-r text-center font-bold text-gray-500 index-zone">4</td>
+                        <td class="p-1 border-r"><input type="text" value="កែវ សុភ័ក្រ" class="w-full p-1 border rounded bg-transparent text-blue-700 font-bold name-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="ស្រី" class="w-full p-1 border rounded text-center bg-transparent gender-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="១៨" class="w-full p-1 border rounded text-center bg-transparent day-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="វិច្ឆិកា" class="w-full p-1 border rounded text-center bg-transparent month-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="២០១៣" class="w-full p-1 border rounded text-center bg-transparent year-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="៩&quot;B&quot;" class="w-full p-1 border rounded text-center bg-transparent class-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="៤" class="w-full p-1 border rounded text-center bg-transparent text-red-600 font-bold rank-field"></td>
+                    </tr>
+                    <tr class="border-b hover:bg-gray-50 student-row">
+                        <td class="p-2 border-r text-center"><input type="checkbox" checked class="student-select w-4 h-4"></td>
+                        <td class="p-2 border-r text-center font-bold text-gray-500 index-zone">5</td>
+                        <td class="p-1 border-r"><input type="text" value="សួន ពិសិដ្ឋ" class="w-full p-1 border rounded bg-transparent text-blue-700 font-bold name-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="ប្រុស" class="w-full p-1 border rounded text-center bg-transparent gender-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="៣០" class="w-full p-1 border rounded text-center bg-transparent day-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="មករា" class="w-full p-1 border rounded text-center bg-transparent month-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="២០១៤" class="w-full p-1 border rounded text-center bg-transparent year-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="៧&quot;A&quot;" class="w-full p-1 border rounded text-center bg-transparent class-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="៥" class="w-full p-1 border rounded text-center bg-transparent text-red-600 font-bold rank-field"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- តំបន់បង្ហាញផ្ទាំងប័ណ្ណសរសើរសម្រាប់ Print -->
+    <div id="certificate-render-zone">
+        <!-- ផ្ទាំងប័ណ្ណសរសើរមេ (សម្រាប់រៀបចំ Layout គំរូ) -->
+        <div class="certificate-container cert-page" id="main-cert-template">
+            <div class="border-frame" id="certificate-frame"></div>
+            <div class="content-area" id="main-area">
+                
+                <div id="block-logo" class="draggable flex flex-col items-center" style="top: 50px; left: 80px;" onclick="selectElement(this)">
+                    <img id="school-logo" src="https://i.imgur.com/vH9w034.png" alt="Logo" class="h-16 mb-1 object-contain pointer-events-none">
+                    <div class="font-moul text-[14px] text-[#1e3a8a]" contenteditable="true">ក្រសួងអប់រំ យុវជន និងកីឡា</div>
+                    <div class="font-moul text-[13px] text-[#1e3a8a]" contenteditable="true">ការិ​ អយក នៃរដ្ឋបាលស្រុកជលគិរី</div>
+                    <div class="font-moul text-[13px] text-[#1e3a8a]" contenteditable="true">វិទ្យាល័យ ព្រះនរោត្តម សីហមុនី</div>
+                </div>
+
+                <div id="block-country" class="draggable text-center text-[#1e3a8a]" style="top: 55px; right: 100px;" onclick="selectElement(this)">
+                    <div class="font-moul text-[16px] tracking-wide" contenteditable="true">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                    <div class="font-moul text-[14px] mt-1" contenteditable="true">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    <div class="text-center mt-1 text-[11px]">«««««*»»»»»</div>
+                </div>
+
+                <div id="block-title" class="draggable text-center" style="top: 190px; left: 50%; transform: translateX(-50%); width: 600px;" onclick="selectElement(this)">
+                    <div class="font-moul text-[52px] text-[#ea580c]" style="text-shadow: 1px 1px 0px #fff, 2px 2px 0px #ea580c;" contenteditable="true">ប័ណ្ណសរសើរ</div>
+                    <div class="font-moul text-[25px] text-[#d97706] mt-1" contenteditable="true">នាយកវិទ្យាល័យ ព្រះនរោត្តម សីហមុនី</div>
+                </div>
+
+                <div id="block-content" class="draggable resizable text-black leading-[2.5] text-center font-siemreap" style="top: 340px; left: 50%; transform: translateX(-50%); width: 920px;" onclick="selectElement(this)">
+                    <div class="text-[19px] text-center px-2">
+                        <span>សូមសរសើរចំពោះសិស្សឈ្មោះ៖</span>
+                        <span id="cert-name" class="font-moul text-[20px] text-[#1d4ed8]">សង់ សៀវហេង</span>
+                        <span>ភេទ</span>
+                        <span id="cert-gender" class="font-moul text-[18px] text-[#1d4ed8]">ប្រុស</span>
+                        <span>កើតនៅថ្ងៃទី</span>
+                        <span id="cert-day" class="font-moul text-[18px] text-[#1d4ed8]">២៤</span>
+                        <span>ខែ</span>
+                        <span id="cert-month" class="font-moul text-[18px] text-[#1d4ed8]">មេសា</span>
+                        <span>ឆ្នាំ</span>
+                        <span id="cert-year" class="font-moul text-[18px] text-[#1d4ed8]">២០១៤</span>
+                        <span>រៀនថ្នាក់ទី</span>
+                        <span id="cert-class" class="font-moul text-[18px] text-[#1d4ed8]">៧"C"</span>
+                        <span><br>ដែលទទួលបានលទ្ធផលក្នុងការសិក្សានិងទទួលបានចំណាត់ថ្នាក់លេខ......................</span>
+                        <span class="font-moul text-[19px] text-[#dc2626]" contenteditable="true">ប្រចាំខែឧសភា</span>
+                        <span>ឆ្នាំសិក្សា</span>
+                        <span class="font-moul text-[18px] text-[#1d4ed8]" contenteditable="true">២០២៥-២០២៦</span>
+                        <span>។</span>
+                    </div>
+                    <div class="text-center font-siemreap text-[18px] mt-2" contenteditable="true">
+                        ប័ណ្ណសរសើរនេះប្រគល់ជូនសាមីខ្លួនប្រើប្រាស់តាមការដែលអាចប្រើបាន ។
+                    </div>
+                </div>
+
+                <div id="block-rank" class="rank-badge-box draggable" style="top: 375px; left: 630px; width: 80px; height: 80px;" onclick="selectElement(this)">
+                    <img id="rank-bg" src="" alt="" class="rank-bg-img hidden">
+                    <div id="cert-rank" class="rank-text-front text-[32px]">១</div>
+                </div>
+
+                <!-- កែប្រែបន្ថែម៖ block ថ្ងៃខែឆ្វេង (នាយកសាលា) អាចអូសពន្លាត ឆ្វេង-ស្តាំបាន -->
+                <div id="block-director-date" class="draggable resizable text-center text-[13px] leading-relaxed border border-transparent hover:border-gray-300" style="bottom: 60px; left: 70px; width: 320px;" onclick="selectElement(this)">
+                    <div contenteditable="true">ថ្ងៃពុធ ៩កើត ខែជេស្ឋ ឆ្នាំម្សាញ់ សប្តស័ក ព.ស ២៥៧០</div>
+                    <div contenteditable="true">វិ.ព្រះនរោត្តមសីហមុនី ត្រូវនឹងថ្ងៃទី២៤ ខែឧសភា ឆ្នាំ២០២៦</div>
+                    <div class="font-moul text-[#1d4ed8] mt-1 text-[15px]" contenteditable="true">បានឃើញ និងឯកភាព</div>
+                    <div class="font-moul text-[#1d4ed8] text-[14px]" contenteditable="true">នាយកសាលា</div>
+                </div>
+
+                <div id="block-photo" class="draggable w-[3cm] h-[4cm] border-2 border-gray-400 border-dashed flex flex-col items-center justify-center text-gray-400 bg-gray-50" style="bottom: 50px; left: 50%; transform: translateX(-50%);" onclick="selectElement(this)">
+                    <i class="fa-solid fa-user-graduate text-3xl mb-1"></i>
+                    <span class="text-[10px]">រូបថត 4x6</span>
+                </div>
+
+                <!-- កែប្រែបន្ថែម៖ block ថ្ងៃខែស្តាំ (គ្រូបន្ទុកថ្នាក់) អាចអូសពន្លាត ឆ្វេង-ស្តាំបាន -->
+                <div id="block-teacher-date" class="draggable resizable text-center text-[13px] leading-relaxed border border-transparent hover:border-gray-300" style="bottom: 60px; right: 70px; width: 320px;" onclick="selectElement(this)">
+                    <div contenteditable="true">ថ្ងៃពុធ ៩កើត ខែជេស្ឋ ឆ្នាំម្សាញ់ សប្តស័ក ព.ស ២៥៧០</div>
+                    <div contenteditable="true">វិ.ព្រះនរោត្តមសីហមុនី ត្រូវនឹងថ្ងៃទី២ាក ខែឧសភា ឆ្នាំ២០២៦</div>
+                    <div class="font-moul text-[#1d4ed8] mt-1 text-[15px]" contenteditable="true">គ្រូបន្ទុកថ្នាក់</div>
+                    <div class="mt-14 font-moul text-[#1d4ed8] text-[14px]" contenteditable="true">ឈ្មោះគ្រូបន្ទុកថ្នាក់</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSelectedElement = null;
+
+        // មុខងារគ្រីសជ្រើសរើសសិស្សទាំងអស់ ឬលុបគ្រីសទាំងអស់
+        function toggleSelectAll(master) {
+            const checkboxes = document.querySelectorAll('.student-select');
+            checkboxes.forEach(cb => cb.checked = master.checked);
+        }
+
+        // មុខងារបោះពុម្ពប័ណ្ណសរសើរច្រើននាក់ក្នុងពេលតែមួយ
+        function printSelectedCertificates() {
+            const rows = document.querySelectorAll('.student-row');
+            const renderZone = document.getElementById('certificate-render-zone');
+            const mainTemplate = document.getElementById('main-cert-template');
+
+            // រក្សាទុកកូដរចនាសម្ព័ន្ធគំរូដែលលោកគ្រូបានរៀបចំទីតាំងរួចរាល់
+            const templateClone = mainTemplate.cloneNode(true);
+            
+            // សំអាត Render Zone ទុកតែពុម្ពមេមួយសម្រាប់បង្ហាញលើអេក្រង់
+            renderZone.innerHTML = '';
+            renderZone.appendChild(mainTemplate);
+
+            let selectedCount = 0;
+
+            rows.forEach((row) => {
+                const isChecked = row.querySelector('.student-select').checked;
+                if (isChecked) {
+                    selectedCount++;
+                    
+                    // ចាប់យកទិន្នន័យពីក្នុងតារាងតាមជួរដេកនីមួយៗ
+                    const name = row.querySelector('.name-field').value;
+                    const gender = row.querySelector('.gender-field').value;
+                    const day = row.querySelector('.day-field').value;
+                    const month = row.querySelector('.month-field').value;
+                    const year = row.querySelector('.year-field').value;
+                    const className = row.querySelector('.class-field').value;
+                    const rank = row.querySelector('.rank-field').value;
+
+                    // បង្កើតប័ណ្ណសរសើរថ្មីមួយដោយចម្លងពីគំរូ Layout ដែលលោកគ្រូបានរៀបចំ
+                    const newCert = templateClone.cloneNode(true);
+                    newCert.removeAttribute('id');
+                    newCert.classList.add('cert-generated');
+
+                    // បញ្ចូលទិន្នន័យសិស្សទៅតាមប័ណ្ណនីមួយៗ
+                    newCert.querySelector('#cert-name').innerText = name;
+                    newCert.querySelector('#cert-gender').innerText = gender;
+                    newCert.querySelector('#cert-day').innerText = day;
+                    newCert.querySelector('#cert-month').innerText = month;
+                    newCert.querySelector('#cert-year').innerText = year;
+                    newCert.querySelector('#cert-class').innerText = className;
+                    newCert.querySelector('#cert-rank').innerText = rank;
+
+                    // បន្ថែមប័ណ្ណសរសើររបស់សិស្សនេះទៅក្នុងតំបន់ត្រៀមបោះពុម្ព
+                    renderZone.appendChild(newCert);
+                }
+            });
+
+            if (selectedCount === 0) {
+                alert('❌ សូមគ្រីស (Tick) ជ្រើសរើសសិស្សយ៉ាងហោចណាស់ម្នាក់ក្នុងតារាងដើម្បីបោះពុម្ព!');
+                return;
+            }
+
+            // លាក់ពុម្ពគំរូមេមិនឱ្យបង្ហាញពេលព្រីន (ព្រីនតែប័ណ្ណដែលមានទិន្នន័យពិត)
+            mainTemplate.classList.add('hidden-print');
+
+            // ហៅមុខងារ Print របស់កម្មវិធីរុករក (Browser)
+            setTimeout(() => {
+                window.print();
+                // បន្ទាប់ពីព្រីនរួច ត្រូវបង្ហាញពុម្ពមេឡើងវិញសម្រាប់កែសម្រួលបន្ត
+                mainTemplate.classList.remove('hidden-print');
+            }, 500);
+        }
+
+        // មុខងារនាំទិន្នន័យចូលពីឯកសារ CSV
+        function importCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                const tableBody = document.getElementById('student-table-body');
+                
+                tableBody.innerHTML = '';
+                let studentCount = 0;
+
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+
+                    const columns = line.split(',');
+                    if (columns.length < 7) continue;
+
+                    studentCount++;
+                    
+                    const name = columns[0].trim();
+                    const gender = columns[1].trim();
+                    const day = columns[2].trim();
+                    const month = columns[3].trim();
+                    const year = columns[4].trim();
+                    const className = columns[5].trim();
+                    const rank = columns[6].trim();
+
+                    const row = document.createElement('tr');
+                    row.className = 'border-b hover:bg-gray-50 student-row';
+                    row.innerHTML = `
+                        <td class="p-2 border-r text-center"><input type="checkbox" checked class="student-select w-4 h-4"></td>
+                        <td class="p-2 border-r text-center font-bold text-gray-500 index-zone">${studentCount}</td>
+                        <td class="p-1 border-r"><input type="text" value="${name}" class="w-full p-1 border rounded bg-transparent text-blue-700 font-bold name-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="${gender}" class="w-full p-1 border rounded text-center bg-transparent gender-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="${day}" class="w-full p-1 border rounded text-center bg-transparent day-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="${month}" class="w-full p-1 border rounded text-center bg-transparent month-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="${year}" class="w-full p-1 border rounded text-center bg-transparent year-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="${className}" class="w-full p-1 border rounded text-center bg-transparent class-field"></td>
+                        <td class="p-1 border-r"><input type="text" value="${rank}" class="w-full p-1 border rounded text-center bg-transparent text-red-600 font-bold rank-field"></td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+                
+                alert(`📊 បាននាំចូលទិន្នន័យសិស្សចំនួន ${studentCount} នាក់ រួចរាល់! លោកគ្រូអាចធិកជ្រើសរើសដើម្បីព្រីនផ្ដុំបាន។`);
+                document.getElementById('csv-file-input').value = '';
+                document.getElementById('select-all-students').checked = true;
+            };
+            reader.readAsText(file, 'UTF-8');
+        }
+
+        function downloadSampleCSV() {
+            const csvContent = "\uFEFF" + "ឈ្មោះសិស្ស,ភេទ,ថ្ងៃទី,ខែ,ឆ្នាំកំណើត,ថ្នាក់ទី,លេខឌីជីថល\n" + 
+                               "សង់ សៀវហេង,ប្រុស,២៤,មេសា,២០១ាន,៧\"C\",១\n" + 
+                               "ចាន់ ម៉ារីយ៉ា,ស្រី,០៥,កញ្ញា,២០១៣,៨\"A\",២\n" +
+                               "លី ម៉េងហុង,ប្រុស,១២,ធ្នូ,២០១៤,៧\"C\",៣\n" +
+                               "កែវ សុភ័ក្រ,ស្រី,១៨,វិច្ឆិកា,២០១៣,៩\"B\",៤\n" +
+                               "សួន ពិសិដ្ឋ,ប្រុស,៣០,មករា,២០១៤,៧\"A\",៥";
+            
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "បញ្ជីឈ្មោះសិស្ស_៥នាក់គំរូ.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // មុខងាររក្សាទុកពុម្ពគំរូ Layout
+        function saveTemplate() {
+            const templateData = [];
+            const elements = document.getElementById('main-cert-template').querySelectorAll('.draggable, .rank-badge-box');
+            
+            elements.forEach(el => {
+                const innerTextSizes = [];
+                el.querySelectorAll('div, span').forEach((child, index) => {
+                    innerTextSizes.push({ index: index, fontSize: child.style.fontSize });
+                });
+
+                templateData.push({
+                    id: el.id,
+                    top: el.style.top,
+                    left: el.style.left,
+                    right: el.style.right,
+                    width: el.style.width,
+                    height: el.style.height,
+                    transform: el.style.transform,
+                    fontSize: el.style.fontSize,
+                    innerSizes: innerTextSizes,
+                    htmlContent: el.innerHTML
+                });
+            });
+
+            const mediaData = {
+                frameBg: document.getElementById('certificate-frame').style.backgroundImage,
+                logoSrc: document.getElementById('school-logo').src,
+                rankBgSrc: document.getElementById('rank-bg').src,
+                rankBgHidden: document.getElementById('rank-bg').classList.contains('hidden')
+            };
+
+            localStorage.setItem('cert_template_layout_v3', JSON.stringify(templateData));
+            localStorage.setItem('cert_template_media_v3', JSON.stringify(mediaData));
+            alert('💾 បានរក្សាទុកទម្រង់គំរូជោគជ័យ!');
+        }
+
+        // មុខងារទាញយកគំរូ Layout ចាស់មកប្រើវិញ
+        function loadTemplate() {
+            const layoutData = localStorage.getItem('cert_template_layout_v3');
+            const mediaData = localStorage.getItem('cert_template_media_v3');
+
+            if (!layoutData) {
+                alert('❌ មិនទាន់មានទម្រង់គំរូដែលបានរក្សាទុកឡើយ!');
+                return;
+            }
+
+            const parsedLayout = JSON.parse(layoutData);
+            parsedLayout.forEach(data => {
+                const el = document.getElementById(data.id);
+                if (el) {
+                    el.style.top = data.top;
+                    el.style.left = data.left;
+                    el.style.right = data.right;
+                    el.style.width = data.width;
+                    el.style.height = data.height;
+                    el.style.transform = data.transform;
+                    el.style.fontSize = data.fontSize;
+                    el.innerHTML = data.htmlContent;
+
+                    if (data.innerSizes) {
+                        const children = el.querySelectorAll('div, span');
+                        data.innerSizes.forEach(childData => {
+                            if (children[childData.index]) {
+                                children[childData.index].style.fontSize = childData.fontSize;
+                            }
+                        });
+                    }
+                }
+            });
+
+            if (mediaData) {
+                const parsedMedia = JSON.parse(mediaData);
+                document.getElementById('certificate-frame').style.backgroundImage = parsedMedia.frameBg;
+                document.getElementById('school-logo').src = parsedMedia.logoSrc;
+                document.getElementById('rank-bg').src = parsedMedia.rankBgSrc;
+                if (parsedMedia.rankBgHidden) {
+                    document.getElementById('rank-bg').classList.add('hidden');
+                } else {
+                    document.getElementById('rank-bg').classList.remove('hidden');
+                }
+            }
+            
+            rebindDragEvents();
+            alert('📂 បានទាញយកទម្រង់គំរូមកប្រើប្រាស់រួចរាល់!');
+        }
+
+        function selectElement(el) {
+            if (currentSelectedElement) {
+                currentSelectedElement.classList.remove('selected');
+            }
+            currentSelectedElement = el;
+            currentSelectedElement.classList.add('selected');
+            
+            let currentSize = 16;
+            let targetEl = el.classList.contains('rank-badge-box') ? (el.querySelector('.rank-text-front') || el) : (el.querySelector('div, span') || el);
+            
+            let style = window.getComputedStyle(targetEl, null).getPropertyValue('font-size');
+            if (style) { currentSize = Math.round(parseFloat(style)); }
+            document.getElementById('font-size-input').value = currentSize;
+        }
+
+        function updateFontSizeFromInput() {
+            if (!currentSelectedElement) return;
+            const newSize = document.getElementById('font-size-input').value + 'px';
+            if (currentSelectedElement.classList.contains('rank-badge-box')) {
+                let frontText = currentSelectedElement.querySelector('.rank-text-front');
+                if (frontText) frontText.style.fontSize = newSize;
+                return;
+            }
+            const textElements = currentSelectedElement.querySelectorAll('div, span');
+            if (textElements.length > 0) {
+                textElements.forEach(el => { el.style.fontSize = newSize; });
+            } else { currentSelectedElement.style.fontSize = newSize; }
+        }
+
+        function changeFontSize(action) {
+            if (!currentSelectedElement) return;
+            if(currentSelectedElement.classList.contains('rank-badge-box')){
+                let frontText = currentSelectedElement.querySelector('.rank-text-front');
+                let style = window.getComputedStyle(frontText, null).getPropertyValue('font-size');
+                let currentSize = parseFloat(style);
+                frontText.style.fontSize = (action === 'increase' ? currentSize + 2 : currentSize - 2) + 'px';
+                return;
+            }
+            const textElements = currentSelectedElement.querySelectorAll('div, span');
+            textElements.forEach(el => {
+                let style = window.getComputedStyle(el, null).getPropertyValue('font-size');
+                let currentSize = parseFloat(style);
+                el.style.fontSize = (action === 'increase' ? currentSize + 1 : currentSize - 1) + 'px';
+            });
+            selectElement(currentSelectedElement);
+        }
+
+        function uploadFile(event, type) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (type === 'frame') {
+                        document.getElementById('certificate-frame').style.backgroundImage = `url('${e.target.result}')`;
+                    } else if (type === 'logo') {
+                        document.getElementById('school-logo').src = e.target.result;
+                    } else if (type === 'rank_bg') {
+                        const img = document.getElementById('rank-bg');
+                        img.src = e.target.result;
+                        img.classList.remove('hidden');
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // មុខងារគ្រប់គ្រងការអូសទីតាំង (Drag & Drop)
+        function rebindDragEvents() {
+            const draggables = document.getElementById('main-cert-template').querySelectorAll('.draggable, .rank-badge-box');
+            draggables.forEach(draggable => {
+                let isDragging = false;
+                let startX, startY, initialLeft, initialTop;
+
+                const newDraggable = draggable.cloneNode(true);
+                draggable.parentNode.replaceChild(newDraggable, draggable);
+
+                newDraggable.addEventListener('mousedown', function(e) {
+                    if (e.target.getAttribute('contenteditable') === 'true') return;
+                    
+                    const rect = newDraggable.getBoundingClientRect();
+                    // មិនឱ្យ Drag ទេ បើប៉ះចំកន្លែងទាញពង្រីក (Resize handler នៅជ្រុងខាងស្តាំខាងក្រោម)
+                    if (e.clientX > rect.right - 18 && e.clientY > rect.bottom - 18) return;
+
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    const containerRect = document.getElementById('main-cert-template').getBoundingClientRect();
+                    initialLeft = rect.left - containerRect.left;
+                    initialTop = rect.top - containerRect.top;
+                    
+                    newDraggable.style.transform = 'none';
+                    newDraggable.style.left = initialLeft + 'px';
+                    newDraggable.style.top = initialTop + 'px';
+                    newDraggable.style.right = 'auto';
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                    e.preventDefault();
+
+                    function onMouseMove(e) {
+                        if (!isDragging) return;
+                        const dx = e.clientX - startX;
+                        const dy = e.clientY - startY;
+                        newDraggable.style.left = (initialLeft + dx) + 'px';
+                        newDraggable.style.top = (initialTop + dy) + 'px';
+                    }
+
+                    function onMouseUp() {
+                        isDragging = false;
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    }
+                });
+            });
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            rebindDragEvents();
+            setTimeout(() => {
+                const overlay = document.getElementById('welcome-overlay');
+                if (overlay) {
+                    overlay.classList.add('fade-out');
+                    setTimeout(() => { overlay.remove(); }, 500);
+                }
+            }, 2500);
+        });
+
+        document.getElementById('main-cert-template').addEventListener('mousedown', (e) => {
+            if (e.target.id === 'main-area' || e.target.id === 'certificate-frame') {
+                if (currentSelectedElement) {
+                    currentSelectedElement.classList.remove('selected');
+                    currentSelectedElement = null;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
