@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>លិខិតសុំច្បាប់ឈប់សម្រាក</title>
+    <link href="https://fonts.googleapis.com/css2?family=Moul&family=Siemreap&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --base-size: 12pt; /* ទំហំដើម 12pt */
+        }
+        body {
+            font-family: 'Siemreap', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #e0e0e0;
+            color: #000;
+            user-select: auto;
+        }
+        
+        /* === ស្ទីលសម្រាប់ Splash Screen === */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #2c3e50; /* ពណ៌ផ្ទៃខាងក្រោយ */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100000; /* ឱ្យនៅលើយគេបំផុត */
+            transition: opacity 0.5s ease-out;
+        }
+        .splash-text {
+            font-family: 'Moul', cursive;
+            font-size: 24pt;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+        /* ចលនារង្វង់វិល (Loading Spinner) */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* ============================== */
+
+        /* របារឧបករណ៍ខាងលើ */
+        .toolbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #2c3e50;
+            padding: 10px;
+            text-align: center;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .tool-group {
+            color: white;
+            font-size: 12pt;
+        }
+        .tool-group select {
+            font-family: 'Siemreap', sans-serif;
+            font-size: 11pt;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: none;
+            margin-left: 5px;
+        }
+        
+        /* ស្ទីលសម្រាប់ប៊ូតុងផ្សេងៗ */
+        .btn-action {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            font-family: 'Siemreap', sans-serif;
+            font-size: 12pt;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .btn-action:hover {
+            background-color: #2980b9;
+        }
+        .btn-warning {
+            background-color: #f39c12;
+        }
+        .btn-warning:hover {
+            background-color: #d68910;
+        }
+        .btn-word {
+            background-color: #2b579a; /* ពណ៌ខៀវ Microsoft Word */
+        }
+        .btn-word:hover {
+            background-color: #1e3d6b;
+        }
+        .btn-print {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 6px 15px;
+            font-family: 'Siemreap', sans-serif;
+            font-size: 12pt;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        .btn-print:hover {
+            background-color: #219150;
+        }
+
+        /* === ស្ទីលសម្រាប់ប៊ូតុងទៅផ្ទះ (ទាក់ទាញ) === */
+        .btn-home {
+            background: linear-gradient(135deg, #ff6b6b, #c0392b);
+            color: white;
+            border: none;
+            padding: 6px 18px;
+            font-family: 'Siemreap', sans-serif;
+            font-size: 12pt;
+            cursor: pointer;
+            border-radius: 20px; /* ធ្វើឱ្យប៊ូតុងមូល */
+            box-shadow: 0 4px 10px rgba(192, 57, 43, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-home:hover {
+            background: linear-gradient(135deg, #ff5252, #a93226);
+            transform: translateY(-2px); /* ហើបឡើងលើបន្តិច */
+            box-shadow: 0 6px 15px rgba(192, 57, 43, 0.6);
+        }
+        /* ================================== */
+
+        /* ទម្រង់ក្រដាស A4 */
+        .page {
+            width: 21cm;
+            min-height: 29.7cm;
+            padding: 2.5cm 2cm;
+            margin: 70px auto 20px auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            box-sizing: border-box;
+            position: relative; /* សម្រាប់ឱ្យប្លុកហត្ថលេខារត់ក្នុងទំព័រនេះ */
+        }
+        
+        /* អនុវត្តទំហំអក្សរឌីណាមិក */
+        .page, .page *, .page table, .page td, .page div, .page span {
+            font-size: var(--base-size) !important;
+            line-height: 1.8;
+        }
+        
+        .font-moul {
+            font-family: 'Moul', cursive !important;
+        }
+        .text-center { text-align: center; }
+        .text-bold { font-weight: bold; }
+        .text-italic { font-style: italic; }
+        
+        /* ស្តាយសម្រាប់ប្លុកដែលអាចទាញរំកិល និងពង្រីកបាន */
+        .movable-block {
+            position: absolute;
+            border: 1px dashed #95a5a6;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px;
+            cursor: default;
+            resize: horizontal; /* អនុញ្ញាតឱ្យទាញពង្រីកទទឹងឆ្វេងស្តាំ */
+            overflow: auto;     /* ចាំបាច់សម្រាប់មុខងារ resize */
+            min-width: 250px;
+        }
+        .drag-handle {
+            background: #ecf0f1;
+            border-bottom: 1px dashed #95a5a6;
+            cursor: move;
+            font-size: 9pt !important;
+            color: #7f8c8d;
+            text-align: center;
+            user-select: none;
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        /* កំណត់ទីតាំងដំបូងរបស់ប្លុកហត្ថលេខានីមួយៗ */
+        #block-director {
+            top: 20.5cm;
+            left: 2cm;
+            width: 8cm;
+        }
+        #block-owner {
+            top: 20.5cm;
+            right: 2cm;
+            width: 8cm;
+        }
+        #block-office {
+            top: 24.5cm;
+            right: 2cm;
+            width: 9.5cm;
+        }
+        
+        /* ស្ទីលពេលបោះពុម្ព (Print) */
+        @media print {
+            body { background-color: #fff; }
+            .toolbar { display: none; }
+            #splash-screen { display: none !important; } /* លាក់ Splash ពេល Print */
+            .page {
+                margin: 0;
+                box-shadow: none;
+                padding: 2cm 1.5cm;
+                width: 100%;
+                height: auto;
+            }
+            .movable-block {
+                border: none !important;
+                background: transparent !important;
+                resize: none !important;
+                overflow: visible !important;
+            }
+            .drag-handle { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- === Splash Screen === -->
+    <div id="splash-screen">
+        <div class="splash-text">សូមស្វាគមន៍មកកាន់កម្មវិធីសុំច្បាប់</div>
+        <div class="splash-text">បង្កើតដោយ៖ លោកគ្រូ ចែម ភាសាល បរិញ្ញាបត្រពត៌មានវិទ្យា</div>
+        <div class="loader"></div>
+    </div>
+    <!-- ======================= -->
+
+    <div class="toolbar">
+        <!-- ប៊ូតុងទៅផ្ទះ -->
+        <button class="btn-home" onclick="goHome()">🏠 ទៅផ្ទះ</button>
+
+        <div class="tool-group">
+            <label for="font-size-select">ទំហំអក្សរ:</label>
+            <select id="font-size-select" onchange="changeFontSize(this.value)">
+                <option value="10pt">10pt</option>
+                <option value="11pt">11pt</option>
+                <option value="12pt" selected>12pt (ដើម)</option>
+                <option value="13pt">13pt</option>
+                <option value="14pt">14pt</option>
+                <option value="16pt">16pt</option>
+                <option value="18pt">18pt</option>
+                <option value="20pt">20pt</option>
+                <option value="24pt">24pt</option>
+            </select>
+        </div>
+        <button class="btn-action" onclick="saveTemplate()">រក្សាទុក (Save)</button>
+        <button class="btn-action btn-warning" onclick="loadTemplate()">ទាញយក (Load)</button>
+        <button class="btn-action btn-word" onclick="exportToWord()">នាំចេញជា Word (.doc)</button>
+        <button class="btn-print" onclick="window.print()">បោះពុម្ព (Print)</button>
+    </div>
+
+    <div class="page" id="document-page" contenteditable="true" spellcheck="false">
+        
+        <table style="width: 100%; border: none; margin-bottom: 25px;">
+            <tr>
+                <td style="width: 55%; vertical-align: top; text-align: left;">
+                    <div class="font-moul">ការិយាល័យអប់រំ យុវជន និងកីឡាស្រុកជលគិរី</div>
+                    <div class="font-moul">វិទ្យាល័យព្រះនរោត្តម សីហមុនី</div>
+                </td>
+                <td style="width: 45%; vertical-align: top; text-align: center;">
+                    <div class="font-moul">ព្រះរាជាណាចក្រកម្ពុជា</div>
+                    <div class="font-moul">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    <div style="margin-top: -5px; letter-spacing: 2px;">-----*-----</div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="text-center font-moul" style="margin-top: 10px; margin-bottom: 30px;">លិខិតសុំច្បាប់</div>
+
+        <div style="margin-bottom: 5px;">
+            ខ្ញុំបាទ/នាងខ្ញុំឈ្មោះ៖............................................................ភេទ៖....................អត្តលេខមន្ត្រី៖............................................................
+        </div>
+        <div style="margin-bottom: 25px;">
+            ជាបុគ្គលិកអប់រំនៃវិទ្យាល័យ ព្រះនរោត្តម សីហមុនី ស្ថិតក្នុងឃុំព្រៃគ្រី ស្រុកជលគិរី ខេត្តកំពង់ឆ្នាំង ។
+        </div>
+
+        <div class="text-center text-bold" style="margin-bottom: 5px;">សូមគោរពជូន</div>
+        <div class="text-center font-moul" style="margin-bottom: 25px;">លោកនាយកវិទ្យាល័យ ព្រះនរោត្តម សីហមុនី</div>
+
+        <div style="padding-left: 1.5cm; margin-bottom: 15px;">
+            <span class="text-bold">តាមរយៈ ៖</span> - នាយករង.......................................................................................................................................................<br>
+            <span style="visibility: hidden;"><span class="text-bold">តាមរយៈ ៖</span> </span> - លេខាធិការ....................................................................................................................................................
+        </div>
+
+        <div style="padding-left: 1.5cm; margin-bottom: 15px; text-align: justify;">
+            <span class="text-bold">កម្មវត្ថុ ៖</span> សំណើសុំអនុញ្ញាតច្បាប់ចំនួន....................ថ្ងៃ ចាប់ពីថ្ងៃទី..........ខែ..........ឆ្នាំ២០២៦ ដល់ថ្ងៃទី..........ខែ..........ឆ្នាំ២០២៦ ។
+        </div>
+
+        <div style="padding-left: 1.5cm; margin-bottom: 25px;">
+            <span class="text-bold">មូលហេតុ ៖</span> ...................................................................................................................................................................
+            <div style="margin-top: 5px;">...........................................................................................................................................................................................</div>
+        </div>
+
+        <div style="text-indent: 1.5cm; text-align: justify; margin-bottom: 15px;">
+            អាស្រ័យដូចបានគោរពជម្រាបជូនតាមកម្មវត្ថុខាងលើ សូមលោកនាយកមេត្តាអនុញ្ញាតច្បាប់ឈប់សម្រាកដោយក្ដីអនុគ្រោះ ។
+        </div>
+        <div style="text-indent: 1.5cm; text-align: justify; margin-bottom: 40px;">
+            សូមលោកនាយក ទទួលនូវការគោរពពីខ្ញុំបាទ/នាងខ្ញុំ ។
+        </div>
+
+        <div id="block-director" class="movable-block" contenteditable="inherit">
+            <div class="drag-handle" contenteditable="false">↕ ទាញទីនេះ / Drag</div>
+            <div class="text-center">
+                <div>ថ្ងៃ...............ខែ...............ឆ្នាំម្សាញ់ សប្តស័ក ព.ស. ២៥៦៩</div>
+                <div>វិ.ព្រះនរោត្តម សីហមុនី, ថ្ងៃទី..........ខែ..........ឆ្នាំ២០២៦</div>
+                <div style="margin-top: 10px;">បានឃើញ និងអនុញ្ញាតច្បាប់ចំនួន..........</div>
+                <div class="font-moul" style="margin-top: 10px;">នាយកសាលា</div>
+            </div>
+        </div>
+
+        <div id="block-owner" class="movable-block" contenteditable="inherit">
+            <div class="drag-handle" contenteditable="false">↕ ទាញទីនេះ / Drag</div>
+            <div class="text-center">
+                <div>ថ្ងៃ...............ខែ...............ឆ្នាំម្សាញ់ សប្តស័ក ព.ស. ២៥៦៩</div>
+                <div>វិ.ព្រះនរោត្តម សីហមុនី, ថ្ងៃទី..........ខែ..........ឆ្នាំ២០២៦</div>
+                <div class="font-moul" style="margin-top: 45px;">ហត្ថលេខាសាមីខ្លួន</div>
+            </div>
+        </div>
+
+        <div id="block-office" class="movable-block" contenteditable="inherit">
+            <div class="drag-handle" contenteditable="false">↕ ទាញទីនេះ / Drag</div>
+            <div class="text-center">
+                <div>ថ្ងៃ...............ខែ...............ឆ្នាំម្សាញ់ សប្តស័ក ព.ស. ២៥៦៩</div>
+                <div>ជលគិរី, ធ្វើនៅថ្ងៃទី..........ខែ..........ឆ្នាំ២០២៦</div>
+                <div style="margin-top: 10px;">បានឃើញ និងការកាត់ផ្ដល់ច្បាប់ចំនួន..........</div>
+                <div class="font-moul" style="margin-top: 10px;">ប្រធានការិយាល័យអប់រំ យុវជន និងកីឡាស្រុកជលគិរី</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // === កូដសម្រាប់បំបាត់ Splash Screen ក្រោយ ៥ វិនាទី ===
+        setTimeout(function() {
+            var splash = document.getElementById('splash-screen');
+            splash.style.opacity = '0';
+            setTimeout(function() {
+                splash.style.display = 'none';
+            }, 500);
+        }, 5000); 
+
+        // === មុខងារប៊ូតុងទៅផ្ទះ ===
+        function goHome() {
+            // អ្នកអាចប្តូរ '/' ទៅជាឈ្មោះ file ឫ តំណភ្ជាប់ទំព័រដើមរបស់អ្នក
+            window.location.href = '/'; 
+            // បើមិនចង់ឱ្យលោតទៅណា អាចប្រើ: alert("ត្រឡប់ទៅទំព័រដើម!");
+        }
+
+        // មុខងារប្តូរទំហំអក្សរ
+        function changeFontSize(size) {
+            document.documentElement.style.setProperty('--base-size', size);
+        }
+
+        // មុខងារទាញទីតាំង (Drag and Drop)
+        function makeElementDraggable(elmnt) {
+            if (!elmnt) return;
+            var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            var handle = elmnt.querySelector('.drag-handle');
+            
+            if (handle) {
+                handle.onmousedown = dragMouseDown;
+            } else {
+                elmnt.onmousedown = dragMouseDown;
+            }
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        // មុខងាររក្សាទុក Template
+        function saveTemplate() {
+            const pageContent = document.getElementById('document-page').innerHTML;
+            const currentFontSize = document.documentElement.style.getPropertyValue('--base-size') || '12pt';
+            
+            localStorage.setItem('leaveLetterTemplate_HTML', pageContent);
+            localStorage.setItem('leaveLetterTemplate_FontSize', currentFontSize);
+            
+            alert('ឯកសារត្រូវបានរក្សាទុកដោយជោគជ័យ!');
+        }
+
+        // មុខងារទាញយក Template មកវិញ
+        function loadTemplate() {
+            const savedContent = localStorage.getItem('leaveLetterTemplate_HTML');
+            const savedFontSize = localStorage.getItem('leaveLetterTemplate_FontSize');
+            
+            if (savedContent) {
+                document.getElementById('document-page').innerHTML = savedContent;
+                
+                if (savedFontSize) {
+                    changeFontSize(savedFontSize);
+                    document.getElementById('font-size-select').value = savedFontSize;
+                }
+                
+                makeElementDraggable(document.getElementById("block-director"));
+                makeElementDraggable(document.getElementById("block-owner"));
+                makeElementDraggable(document.getElementById("block-office"));
+                
+                alert('ទាញយកឯកសារចាស់មកវិញបានជោគជ័យ!');
+            } else {
+                alert('មិនមានឯកសារដែលបានរក្សាទុកពីមុនទេ!');
+            }
+        }
+
+        // --- មុខងារថ្មី៖ នាំចេញជា Word Document (.doc) ---
+        function exportToWord() {
+            var pageClone = document.getElementById('document-page').cloneNode(true);
+            
+            var handles = pageClone.querySelectorAll('.drag-handle');
+            handles.forEach(function(handle) {
+                handle.remove();
+            });
+
+            var contentHTML = pageClone.innerHTML;
+            var currentFontSize = document.documentElement.style.getPropertyValue('--base-size') || '12pt';
+
+            var wordStyles = `
+                <style>
+                    @charset "utf-8";
+                    body { 
+                        font-family: 'Siemreap', 'Khmer OS Battambang', 'Calibri', sans-serif; 
+                        font-size: ${currentFontSize}; 
+                        line-height: 1.8; 
+                        color: #000000;
+                    }
+                    .font-moul { 
+                        font-family: 'Moul', 'Khmer OS Muol Light', 'Arial Black', sans-serif; 
+                        font-weight: bold; 
+                    }
+                    .text-center { text-align: center; }
+                    .text-bold { font-weight: bold; }
+                    .text-italic { font-style: italic; }
+                    .movable-block { 
+                        margin-top: 30px; 
+                        margin-bottom: 30px; 
+                        display: inline-block;
+                        vertical-align: top;
+                    }
+                </style>
+            `;
+
+            var completeHTML = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" 
+                      xmlns:w="urn:schemas-microsoft-com:office:word" 
+                      xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="utf-8">
+                    ${wordStyles}
+                </head>
+                <body>
+                    ${contentHTML}
+                </body>
+                </html>
+            `;
+
+            var blob = new Blob(['\ufeff' + completeHTML], {
+                type: 'application/msword;charset=utf-8'
+            });
+
+            var url = URL.createObjectURL(blob);
+            var downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = 'លិខិតសុំច្បាប់ឈប់សម្រាក.doc'; 
+            
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+            URL.revokeObjectURL(url);
+        }
+
+        window.onload = function() {
+            makeElementDraggable(document.getElementById("block-director"));
+            makeElementDraggable(document.getElementById("block-owner"));
+            makeElementDraggable(document.getElementById("block-office"));
+        };
+    </script>
+
+</body>
+</html>
