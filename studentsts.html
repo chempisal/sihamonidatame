@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងឯកសារ និងពិន្ទុថ្នាក់រៀន</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Kantumruy Pro', sans-serif;
+        }
+        body {
+            display: flex;
+            height: 100vh;
+            background-color: #f4f7f6;
+            color: #333;
+            overflow: hidden;
+        }
+        
+        /* រចនា Sidebar */
+        aside {
+            width: 280px;
+            background-color: #1e3a8a;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid #3b5bdb;
+        }
+        .sidebar-header h1 { font-size: 22px; margin-bottom: 10px; }
+        .sidebar-header p { font-size: 14px; color: #d1d5db; }
+        .sidebar-menu { flex-grow: 1; padding: 20px 0; }
+        .sidebar-menu ul { list-style: none; }
+        .sidebar-menu li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: #f3f4f6;
+            text-decoration: none;
+            transition: background 0.3s;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .sidebar-menu li a.active, .sidebar-menu li a:hover {
+            background-color: #2563eb;
+            border-left: 4px solid #60a5fa;
+        }
+        .sidebar-menu li a span { margin-left: 10px; }
+        .sidebar-footer { padding: 20px; text-align: center; font-size: 14px; background-color: #1e40af; }
+        
+        /* រចនា Main Content */
+        main {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        header {
+            background-color: #fff;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+        .header-title h2 { font-size: 20px; color: #374151; font-weight: 600; }
+        
+        /* តំបន់បង្ហាញ Content */
+        .content-section {
+            display: none;
+            padding: 30px;
+            height: calc(100vh - 75px);
+            overflow-y: auto;
+        }
+        .content-section.active { display: block; }
+        
+        /* ថេបជ្រើសរើសខែ */
+        .month-tabs-container {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        .month-tab {
+            padding: 8px 16px;
+            background-color: #f3f4f6;
+            color: #4b5563;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .month-tab:hover { background-color: #e5e7eb; }
+        .month-tab.active {
+            background-color: #2563eb;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        /* ប៊ូតុង និងផ្នែកខាងលើតារាង */
+        .table-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .table-top-bar h3 { font-size: 20px; color: #1f2937; }
+        .action-btn-group { display: flex; gap: 10px; }
+        
+        /* រចនាប៊ូតុង */
+        .btn-custom {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-add-new { background-color: #2563eb; color: white; }
+        .btn-add-new:hover { background-color: #1d4ed8; }
+        .btn-export-excel { background-color: #10b981; color: white; }
+        .btn-export-excel:hover { background-color: #059669; }
+        .btn-import-excel { background-color: #ffffff; color: #059669; border: 1.5px solid #10b981; }
+        .btn-import-excel:hover { background-color: #f0fdf4; }
+        .btn-print-data { background-color: #475569; color: white; }
+        .btn-print-data:hover { background-color: #334155; }
+
+        /* កុងតេន័រតារាង */
+        .table-responsive {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            overflow-x: auto;
+            max-width: 100%;
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            white-space: nowrap;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+        th {
+            background-color: #f3f4f6;
+            color: #374151;
+            font-weight: 600;
+        }
+        tr:hover td { background-color: #f9fafb; }
+        .text-center { text-align: center; }
+        
+        .sticky-col-score { position: sticky; left: 0; z-index: 5; background-color: #f3f4f6; }
+        td.sticky-col-score { background-color: #fff; font-weight: bold; }
+        tr:hover td.sticky-col-score { background-color: #f9fafb; }
+
+        .btn-action {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-edit { background-color: #dbeafe; color: #1d4ed8; }
+        .btn-delete { background-color: #fee2e2; color: #b91c1c; }
+
+        .score-input-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            background-color: #f8fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-top: 15px;
+        }
+        .text-xs { font-size: 12px; font-weight: 500; color: #475569; display: block; margin-bottom: 4px; }
+        .w-full { width: 100%; }
+        .px-2 { padding-left: 8px; padding-right: 8px; }
+        .py-1.5 { padding-top: 6px; padding-bottom: 6px; }
+        .border { border: 1px solid #cbd5e1; }
+        .rounded-lg { border-radius: 8px; }
+        .score-input-grid input { outline: none; text-align: center; font-weight: bold; }
+        .score-input-grid input:focus { border-color: #2563eb; box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
+
+        .print-only-header { display: none; }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.7);
+            z-index: 999; justify-content: center; align-items: center;
+            font-size: 18px; font-weight: bold; color: #1e3a8a;
+        }
+
+        @media print {
+            @page { size: A4 landscape; margin: 10mm; }
+            body { background: #fff; color: #000; display: block; }
+            aside, header, .table-top-bar, .month-tabs-container, .btn-action, td:last-child, th:last-child { display: none !important; }
+            main, .content-section, .table-responsive { display: block !important; width: 100%; padding: 0; margin: 0; box-shadow: none; overflow: visible; }
+            .print-only-header { display: block !important; width: 100%; margin-bottom: 20px; }
+            .print-top-row { display: flex; justify-content: space-between; font-size: 12px; }
+            .print-main-title { text-align: center; font-size: 18px; font-weight: bold; margin-top: 10px; }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { border: 1px solid #000 !important; padding: 6px 4px !important; font-size: 11px !important; text-align: center; }
+            td.sticky-col-score { position: static !important; text-align: left; }
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 200;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 3% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 85%;
+            max-width: 850px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+        }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #e5e7eb; padding-bottom: 15px; margin-bottom: 20px;
+        }
+        .close-btn { font-size: 24px; cursor: pointer; color: #9ca3af; }
+        .form-group-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: 14px; font-weight: 500; }
+        .form-group input, .form-group select { padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 6px; }
+        .modal-footer { margin-top: 25px; padding-top: 15px; border-top: 1px solid #e5e7eb; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-submit { background-color: #2563eb; color: white; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
+        .btn-cancel { background-color: #e5e7eb; color: #374151; padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div id="loading" class="loading-overlay">⏳ កំពុងដំណើរការទិន្នន័យ...</div>
+
+    <aside>
+        <div class="sidebar-header">
+            <h1>រដ្ឋបាលថ្នាក់រៀន</h1>
+            <p>គម្រោងGIEP</p>
+        </div>
+        <div class="sidebar-menu">
+            <ul>
+                <li><a onclick="switchTab('info')" id="menu-info" class="active">📋 <span>ព័ត៌មានប្រវត្តិរូបសិស្ស</span></a></li>
+                <li><a onclick="switchTab('score')" id="menu-score">📊 <span>បញ្ជីពិន្ទុសិស្ស</span></a></li>
+            </ul>
+        </div>
+        <div class="sidebar-footer">ឆ្នាំសិក្សា ២០២៥-២០២៦</div>
+    </aside>
+
+    <main>
+        <header>
+            <div class="header-title"><h2>ប្រព័ន្ធគ្រប់គ្រងសាលារៀនឌីជីថល</h2></div>
+        </header>
+
+        <!-- បញ្ជីប្រវត្តិរូបលម្អិតសិស្ស -->
+        <div id="section-info" class="content-section active">
+            <div class="table-responsive">
+                <div class="table-top-bar">
+                    <h3>📋 បញ្ជីប្រវត្តិរូបលម្អិតសិស្ស</h3>
+                    <!-- 💡 បានកែប្រែត្រង់នេះ៖ ហៅទៅកាន់មុខងារ openModal('add') ឱ្យត្រូវគ្នាជាមួយ JavaScript -->
+                    <button class="btn-custom btn-add-new" onclick="openModal('add')">➕ បញ្ចូលសិស្សថ្មី</button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ល.រ</th>
+                            <th>អ.ល</th>
+                            <th>គោត្តនាម និងនាម</th>
+                            <th>ភេទ</th>
+                            <th>ថ្ងៃខែឆ្នាំកំណើត</th>
+                            <th>ឈ្មោះឪពុក</th>
+                            <th>មុខរបរឪពុក</th>
+                            <th>ឈ្មោះម្តាយ</th>
+                            <th>មុខរបរម្តាយ</th>
+                            <th>អាសយដ្ឋាន</th>
+                            <th>មកពីសាលា</th>
+                            <th>លេខទូរសព្ទ</th>
+                            <th>ផ្សេងៗ</th>
+                            <th>សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody id="info-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- បញ្ជីពិន្ទុសិស្ស -->
+        <div id="section-score" class="content-section">
+            
+            <!-- ថេបជ្រើសរើសខែទាំង ១២ -->
+            <div class="month-tabs-container" id="monthTabsContainer"></div>
+
+            <div class="table-responsive">
+                <div class="print-only-header">
+                    <div class="print-top-row">
+                        <div><strong>សាលាបឋមសិក្សាភូមិធំថ្មី</strong><br>ថ្នាក់រៀនទី៖ ៦ គ</div>
+                        <div style="text-align: center;"><strong>ព្រះរាជាណាចក្រកម្ពុជា</strong><br>ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+                    </div>
+                    <div class="print-main-title" id="printTitle">តារាងលទ្ធផលការសិក្សានិងពិន្ទុសិស្សានុសិស្ស</div>
+                </div>
+
+                <div class="table-top-bar">
+                    <h3 id="scoreTableTitle">📊 តារាងពិន្ទុ និងចំណាត់ថ្នាក់សិស្ស</h3>
+                    <div class="action-btn-group">
+                        <button class="btn-custom btn-print-data" onclick="window.print()">🖨️ បោះពុម្ពពិន្ទុ</button>
+                        <button class="btn-custom btn-import-excel" onclick="triggerScoreExcelImport()">📥 នាំចូលពី Excel</button>
+                        <button class="btn-custom btn-export-excel" onclick="exportScoresToExcel()">📤 នាំចេញជា Excel</button>
+                        <input type="file" id="scoreExcelInput" accept=".xlsx, .xls" style="display: none;" onchange="importScoresFromExcel(event)">
+                    </div>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="text-center">ល.រ</th>
+                            <th class="sticky-col-score">គោត្តនាម និងនាម</th>
+                            <th class="text-center">ភេទ</th>
+                            <th style="background:#fef08a; color:#000;">ភាសាខ្មែរ</th>
+                            <th style="background:#fef08a; color:#000;">គណិត</th>
+                            <th>រូបវិទ្យា</th>
+                            <th>គីមីវិទ្យា</th>
+                            <th>ជីវវិទ្យា</th>
+                            <th>ប្រវត្តិ</th>
+                            <th>ភូមិវិទ្យា</th>
+                            <th>សីលធម៌</th>
+                            <th>ផែនដី</th>
+                            <th>អង់គ្លេស</th>
+                            <th style="background:#bbf7d0; color:#166534; font-weight:bold;">សរុប</th>
+                            <th style="background:#bfdbfe; color:#1e40af; font-weight:bold;">មធ្យមភាគ</th>
+                            <th style="background:#fbcfe8; color:#9d174d; font-weight:bold;">ចំណាត់ថ្នាក់</th>
+                            <th class="text-center">សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody id="score-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal បញ្ចូលព័ត៌មាន -->
+    <div id="studentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">បញ្ចូលព័ត៌មាន និងពិន្ទុសិស្ស</h3>
+                <span class="close-btn" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="studentForm" onsubmit="saveStudent(event)">
+                <!-- ទុកសំរាប់សម្គាល់ Mode: ទំនេរគឺ Add, មានតម្លៃគឺ Edit -->
+                <input type="hidden" id="formMode" value="add">
+                
+                <h4 style="color:#1e3a8a; margin-bottom:10px; border-left:4px solid #2563eb; padding-left:8px;">១. ប្រវត្តិរូបសិស្ស</h4>
+                <div class="form-group-row">
+                    <div class="form-group"><label>អត្តលេខ (អ.ល)</label><input type="text" id="stu_id" required></div>
+                    <div class="form-group"><label>គោត្តនាម និងនាម</label><input type="text" id="stu_name" required></div>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-group"><label>ភេទ</label><select id="stu_gender"><option value="ប្រុស">ប្រុស</option><option value="ស្រី">ស្រី</option></select></div>
+                    <div class="form-group"><label>ថ្ងៃខែឆ្នាំកំណើត</label><input type="text" id="stu_dob" placeholder="ដដ-មម-ឆ្នាំ"></div>
+                </div>
+                
+                <div class="form-group-row">
+                    <div class="form-group"><label>ឈ្មោះឪពុក</label><input type="text" id="fa_name"></div>
+                    <div class="form-group"><label>មុខរបរឪពុក</label><input type="text" id="fa_job"></div>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-group"><label>ឈ្មោះម្តាយ</label><input type="text" id="mo_name"></div>
+                    <div class="form-group"><label>មុខរបរម្តាយ</label><input type="text" id="mo_job"></div>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-group"><label>អាសយដ្ឋាន</label><input type="text" id="stu_address"></div>
+                    <div class="form-group"><label>មកពីសាលា</label><input type="text" id="stu_school"></div>
+                </div>
+                <div class="form-group-row">
+                    <div class="form-group"><label>លេខទូរសព្ទអាណាព្យាបាល</label><input type="text" id="stu_phone"></div>
+                    <div class="form-group"><label>ផ្សេងៗ</label><input type="text" id="stu_notes"></div>
+                </div>
+
+                <h4 id="scoreFormTitle" style="color:#1e3a8a; margin-top:20px; margin-bottom:5px; border-left:4px solid #10b981; padding-left:8px;">២. បញ្ចូលពិន្ទុមុខវិជ្ជាប្រចាំខែ (០ - ១០០)</h4>
+                
+                <div class="score-input-grid">
+                    <div><label class="text-xs">ភាសាខ្មែរ</label><input type="number" min="0" max="100" id="khmer" value="0" class="w-full px-2 py-1.5 border rounded-lg"></div>
+                    <div><label class="text-xs">គណិតវិទ្យា</label><input type="number" min="0" max="100" id="math" value="0" class="w-full px-2 py-1.5 border rounded-lg"></div>
+                    <div><label class="text-xs">រូបវិទ្យា</label><input type="number" min="0" max="100" id="physics" value="0" class="w-full px-2 py-1.5 border rounded-lg"></div>
+                    <div><label class="text-xs">គីមីវិទ្យា</label><input type="number" min="0" max="100" id="chemistry" value="0" class="w-full px-2 py-1.5 border rounded-lg"></div>
+                    <div><label class="text-xs">ជីវវិទ្យា</label><input type="number" min="0" max="100" id="biology" value="0" class="w-full px-2 py-1.5 border rounded-lg"></div>
+                    <div><label class="text-xs">ប្រវត្តិវិទ្យា</label><input type="number" min="0" max="100" id="history" value="0" class="w-full px-2 py-1.5 border rounded-lg"></div>
+                    <div><label class="text-xs">ភូមិវិទ្យា</label><input type="number" min="0" max="100" id="geography" value="0" class="w-full px-2 py-1.5 border rounded-lg"></div>
+                    <div><label class="text-xs">សីលធម៌</label><input type="number" min="0" max="100" id="morality" value="0" class="w-full px-2 py-1.5 border rounded-lg"></div>
+                    <div><label class="text-xs">ផែនដីវិទ្យា</label><input type="number" min="0" max="100" id="earth" value="0" class="w-full px-2 py-1.5 border rounded-lg"></div>
+                    <div><label class="text-xs">អង់គ្លេស</label><input type="number" min="0" max="100" id="english" value="0" class="w-full px-2 py-1.5 border rounded-lg"></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeModal()">បោះបង់</button>
+                    <button type="submit" class="btn-submit">រក្សាទុកទិន្នន័យ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 🔗 ប្តូរជំនួសតំណភ្ជាប់ URL ខាងក្រោមជាមួយនិង Google Apps Script Web App URL របស់អ្នក
+        const API_URL = "https://script.google.com/macros/s/AKfycbx5BPhy6vIJAIiiav54jdYdrTuE2Q17qGS8Efn4wAjB8kuPFg_HFi5MHfDvuaLpOGoZ/exec";
+        
+        const listMonths = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
+        let currentMonth = "មករា";
+        let rawSheetData = []; 
+
+        function generateMonthTabs() {
+            const container = document.getElementById('monthTabsContainer');
+            container.innerHTML = '';
+            listMonths.forEach(m => {
+                const btn = document.createElement('button');
+                btn.className = `month-tab ${m === currentMonth ? 'active' : ''}`;
+                btn.innerText = `ខែ ${m}`;
+                btn.onclick = () => selectMonth(m);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectMonth(monthName) {
+            currentMonth = monthName;
+            generateMonthTabs();
+            document.getElementById('scoreTableTitle').innerText = `📊 តារាងពិន្ទុ និងចំណាត់ថ្នាក់សិស្ស — ប្រចាំខែ ${currentMonth}`;
+            document.getElementById('printTitle').innerText = `តារាងលទ្ធផលការសិក្សានិងពិន្ទុសិស្សានុសិស្ស — ប្រចាំខែ ${currentMonth}`;
+            renderTables();
+        }
+
+        function toggleLoading(show) {
+            document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        }
+
+        async function loadDataFromSheet() {
+            toggleLoading(true);
+            try {
+                const response = await fetch(`${API_URL}?action=read`);
+                if (response.ok) {
+                    rawSheetData = await response.json();
+                    renderTables();
+                } else {
+                    alert("មិនអាចទាញទិន្នន័យពី Google Sheet បានទេ!");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("មានបញ្ហាប្រព័ន្ធក្នុងការភ្ជាប់ទៅកាន់ Google Sheet!");
+            }
+            toggleLoading(false);
+        }
+
+        function renderTables() {
+            let uniqueStudentsMap = {};
+            rawSheetData.forEach(row => {
+                uniqueStudentsMap[row.id] = {
+                    id: row.id, name: row.name, gender: row.gender, dob: row.dob,
+                    fatherName: row.fatherName, fatherJob: row.fatherJob,
+                    motherName: row.motherName, motherJob: row.motherJob,
+                    address: row.address, formerSchool: row.formerSchool,
+                    phone: row.phone, notes: row.notes
+                };
+            });
+            let allStudentsList = Object.values(uniqueStudentsMap);
+
+            let currentMonthScoresList = allStudentsList.map(student => {
+                let monthRecord = rawSheetData.find(r => r.id === student.id && r.month === currentMonth);
+                
+                let scores = monthRecord ? { ...monthRecord.scores } : {
+                    khmer: 0, math: 0, physics: 0, chemistry: 0, biology: 0,
+                    history: 0, geography: 0, morality: 0, earth: 0, english: 0
+                };
+
+                let totalScore = Object.values(scores).reduce((a, b) => Number(a) + Number(b), 0);
+                let average = (totalScore / 10).toFixed(2);
+
+                return { ...student, scores, totalScore, average };
+            });
+
+            let sortedScores = [...currentMonthScoresList].sort((a, b) => b.totalScore - a.totalScore);
+            currentMonthScoresList.forEach(s => {
+                s.rank = sortedScores.findIndex(x => x.id === s.id) + 1;
+            });
+
+            // បង្ហាញទិន្នន័យលើតារាងព័ត៌មានប្រវត្តិរូប
+            const infoBody = document.getElementById('info-table-body');
+            infoBody.innerHTML = '';
+            allStudentsList.forEach((student, index) => {
+                const trInfo = document.createElement('tr');
+                trInfo.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${student.id}</td>
+                    <td><b>${student.name}</b></td>
+                    <td>${student.gender}</td>
+                    <td>${student.dob || ''}</td>
+                    <td>${student.fatherName || ''}</td>
+                    <td>${student.fatherJob || ''}</td>
+                    <td>${student.motherName || ''}</td>
+                    <td>${student.motherJob || ''}</td>
+                    <td>${student.address || ''}</td>
+                    <td>${student.formerSchool || ''}</td>
+                    <td>${student.phone || ''}</td>
+                    <td>${student.notes || ''}</td>
+                    <td>
+                        <button class="btn-action btn-edit" onclick="openModal('edit', '${student.id}')">📝 កែប្រែ</button>
+                        <button class="btn-action btn-delete" onclick="deleteStudent('${student.id}')">🗑️ លុបសិស្ស</button>
+                    </td>
+                `;
+                infoBody.appendChild(trInfo);
+            });
+
+            // បង្ហាញទិន្នន័យលើតារាងពិន្ទុតាមខែ
+            const scoreBody = document.getElementById('score-table-body');
+            scoreBody.innerHTML = '';
+            currentMonthScoresList.forEach((student, index) => {
+                const trScore = document.createElement('tr');
+                trScore.innerHTML = `
+                    <td class="text-center">${index + 1}</td>
+                    <td class="sticky-col-score">${student.name}</td>
+                    <td class="text-center">${student.gender}</td>
+                    <td class="text-center" style="font-weight:500;">${student.scores.khmer}</td>
+                    <td class="text-center" style="font-weight:500;">${student.scores.math}</td>
+                    <td class="text-center">${student.scores.physics}</td>
+                    <td class="text-center">${student.scores.chemistry}</td>
+                    <td class="text-center">${student.scores.biology}</td>
+                    <td class="text-center">${student.scores.history}</td>
+                    <td class="text-center">${student.scores.geography}</td>
+                    <td class="text-center">${student.scores.morality}</td>
+                    <td class="text-center">${student.scores.earth}</td>
+                    <td class="text-center">${student.scores.english}</td>
+                    <td class="text-center" style="background:#e8f5e9; font-weight:bold; color:#1b5e20;">${student.totalScore}</td>
+                    <td class="text-center" style="background:#e3f2fd; font-weight:bold; color:#0d47a1;">${student.average}</td>
+                    <td class="text-center" style="background:#fce4ec; font-weight:bold; color:#880e4f;">${student.rank}</td>
+                    <td class="text-center">
+                        <button class="btn-action btn-edit" onclick="openModal('edit', '${student.id}')">📝 កែពិន្ទុ</button>
+                    </td>
+                `;
+                scoreBody.appendChild(trScore);
+            });
+        }
+
+        // 💡 មុខងារបើក Modal (បានកែសម្រួលឈ្មោះឱ្យត្រឹមត្រូវ និងសម្អាត Form ពេល Add ថ្មី)
+        function openModal(mode, studentId = null) {
+            const modal = document.getElementById('studentModal');
+            document.getElementById('studentForm').reset();
+            modal.style.display = 'block';
+            
+            document.getElementById('scoreFormTitle').innerText = `២. បញ្ចូលពិន្ទុមុខវិជ្ជា — (ប្រចាំខែ ${currentMonth})`;
+
+            if (mode === 'add') {
+                document.getElementById('modalTitle').innerText = '➕ បញ្ចូលព័ត៌មាន និងពិន្ទុសិស្សថ្មី';
+                document.getElementById('formMode').value = 'add';
+                document.getElementById('stu_id').disabled = false;
+                
+                // កំណត់ពិន្ទុដំបូងស្មើ 0
+                document.getElementById('khmer').value = 0;
+                document.getElementById('math').value = 0;
+                document.getElementById('physics').value = 0;
+                document.getElementById('chemistry').value = 0;
+                document.getElementById('biology').value = 0;
+                document.getElementById('history').value = 0;
+                document.getElementById('geography').value = 0;
+                document.getElementById('morality').value = 0;
+                document.getElementById('earth').value = 0;
+                document.getElementById('english').value = 0;
+            } else if (mode === 'edit') {
+                document.getElementById('modalTitle').innerText = '📝 កែប្រែព័ត៌មាន និងពិន្ទុសិស្ស';
+                document.getElementById('formMode').value = 'edit';
+                document.getElementById('stu_id').value = studentId;
+                document.getElementById('stu_id').disabled = true; 
+
+                const profile = rawSheetData.find(r => r.id === studentId);
+                const monthRecord = rawSheetData.find(r => r.id === studentId && r.month === currentMonth);
+
+                if (profile) {
+                    document.getElementById('stu_name').value = profile.name;
+                    document.getElementById('stu_gender').value = profile.gender;
+                    document.getElementById('stu_dob').value = profile.dob || '';
+                    document.getElementById('fa_name').value = profile.fatherName || '';
+                    document.getElementById('fa_job').value = profile.fatherJob || '';
+                    document.getElementById('mo_name').value = profile.motherName || '';
+                    document.getElementById('mo_job').value = profile.motherJob || '';
+                    document.getElementById('stu_address').value = profile.address || '';
+                    document.getElementById('stu_school').value = profile.formerSchool || '';
+                    document.getElementById('stu_phone').value = profile.phone || '';
+                    document.getElementById('stu_notes').value = profile.notes || '';
+                }
+                
+                if (monthRecord) {
+                    document.getElementById('khmer').value = monthRecord.scores.khmer;
+                    document.getElementById('math').value = monthRecord.scores.math;
+                    document.getElementById('physics').value = monthRecord.scores.physics;
+                    document.getElementById('chemistry').value = monthRecord.scores.chemistry;
+                    document.getElementById('biology').value = monthRecord.scores.biology;
+                    document.getElementById('history').value = monthRecord.scores.history;
+                    document.getElementById('geography').value = monthRecord.scores.geography;
+                    document.getElementById('morality').value = monthRecord.scores.morality;
+                    document.getElementById('earth').value = monthRecord.scores.earth;
+                    document.getElementById('english').value = monthRecord.scores.english;
+                }
+            }
+        }
+
+        function closeModal() { document.getElementById('studentModal').style.display = 'none'; }
+
+        async function saveStudent(event) {
+            event.preventDefault();
+            toggleLoading(true);
+            
+            // ប្រសិនបើ input ត្រូវបាន disabled (ករណីកែប្រែ) ត្រូវយកតម្លៃតាមវិធីនេះ
+            const studentId = document.getElementById('stu_id').value;
+            
+            const payload = {
+                id: studentId,
+                month: currentMonth, 
+                name: document.getElementById('stu_name').value,
+                gender: document.getElementById('stu_gender').value,
+                dob: document.getElementById('stu_dob').value,
+                fatherName: document.getElementById('fa_name').value,
+                fatherJob: document.getElementById('fa_job').value,
+                motherName: document.getElementById('mo_name').value,
+                motherJob: document.getElementById('mo_job').value,
+                address: document.getElementById('stu_address').value,
+                formerSchool: document.getElementById('stu_school').value,
+                phone: document.getElementById('stu_phone').value,
+                notes: document.getElementById('stu_notes').value,
+                scores: {
+                    khmer: Number(document.getElementById('khmer').value),
+                    math: Number(document.getElementById('math').value),
+                    physics: Number(document.getElementById('physics').value),
+                    chemistry: Number(document.getElementById('chemistry').value),
+                    biology: Number(document.getElementById('biology').value),
+                    history: Number(document.getElementById('history').value),
+                    geography: Number(document.getElementById('geography').value),
+                    morality: Number(document.getElementById('morality').value),
+                    earth: Number(document.getElementById('earth').value),
+                    english: Number(document.getElementById('english').value)
+                }
+            };
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'save', month: currentMonth, data: payload })
+                });
+                closeModal();
+                await loadDataFromSheet();
+            } catch (error) {
+                console.error(error);
+                alert("ការរក្សាទុកទិន្នន័យបរាជ័យ!");
+                toggleLoading(false);
+            }
+        }
+
+        async function deleteStudent(studentId) {
+            if(confirm('តើអ្នកពិតជាចង់លុបសិស្សនេះ និងរាល់ពិន្ទុគ្រប់ខែទាំងអស់ចេញពីប្រព័ន្ធមែនទេ?')) {
+                toggleLoading(true);
+                try {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete', id: studentId })
+                    });
+                    await loadDataFromSheet();
+                } catch (error) {
+                    alert("មិនអាចលុបទិន្នន័យបានទេ!");
+                    toggleLoading(false);
+                }
+            }
+        }
+
+        function triggerScoreExcelImport() { document.getElementById('scoreExcelInput').click(); }
+
+        async function importScoresFromExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            toggleLoading(true);
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                
+                if (jsonData.length <= 1) {
+                    alert("ឯកសារទទេ ឬខុសទម្រង់តារាង!");
+                    toggleLoading(false);
+                    return;
+                }
+
+                let importedStudents = [];
+                for (let i = 1; i < jsonData.length; i++) {
+                    const row = jsonData[i];
+                    if (!row[1]) continue;
+
+                    importedStudents.push({
+                        id: row[1].toString(),
+                        month: currentMonth, 
+                        name: row[2],
+                        gender: row[3] || 'ប្រុស',
+                        dob: row[4] || '',
+                        fatherName: row[5] || '', fatherJob: row[6] || '',
+                        motherName: row[7] || '', motherJob: row[8] || '',
+                        address: row[9] || '', formerSchool: row[10] || '',
+                        phone: row[11] || '', notes: row[12] || '',
+                        scores: {
+                            khmer: Number(row[13]) || 0, math: Number(row[14]) || 0,
+                            physics: Number(row[15]) || 0, chemistry: Number(row[16]) || 0,
+                            biology: Number(row[17]) || 0, history: Number(row[18]) || 0,
+                            geography: Number(row[19]) || 0, morality: Number(row[20]) || 0,
+                            earth: Number(row[21]) || 0, english: Number(row[22]) || 0
+                        }
+                    });
+                }
+
+                try {
+                    await fetch(API_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'batchSave', data: importedStudents })
+                    });
+                    alert(`📥 នាំចូលបញ្ជីពិន្ទុប្រចាំខែ ${currentMonth} រួចរាល់!`);
+                    loadDataFromSheet();
+                } catch (error) {
+                    alert("មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ Excel!");
+                    toggleLoading(false);
+                }
+                event.target.value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function exportScoresToExcel() {
+            const headers = [
+                "ល.រ", "អ.ល", "ប្រចាំខែ", "ឈ្មោះសិស្ស", "ភេទ", "ថ្ងៃខែឆ្នាំកំណើត", 
+                "ឈ្មោះឪពុក", "មុខរបរឪពុក", "ឈ្មោះម្តាយ", "មុខរបរម្តាយ", 
+                "អាសយដ្ឋាន", "មកពីសាលា", "លេខទូរសព្ទ", "ផ្សេងៗ",
+                "ភាសាខ្មែរ", "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", 
+                "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា", "សីលធម៌", "ផែនដីវិទ្យា", "អង់គ្លេស"
+            ];
+
+            let uniqueStudents = {};
+            rawSheetData.forEach(r => { uniqueStudents[r.id] = r; });
+            
+            const rows = Object.values(uniqueStudents).map((student, index) => {
+                let monthRecord = rawSheetData.find(r => r.id === student.id && r.month === currentMonth);
+                let sc = monthRecord ? monthRecord.scores : { khmer:0, math:0, physics:0, chemistry:0, biology:0, history:0, geography:0, morality:0, earth:0, english:0 };
+                
+                return [
+                    index + 1, student.id, currentMonth, student.name, student.gender, student.dob,
+                    student.fatherName, student.fatherJob, student.motherName, student.motherJob,
+                    student.address, student.formerSchool, student.phone, student.notes,
+                    sc.khmer, sc.math, sc.physics, sc.chemistry, sc.biology, sc.history, sc.geography, sc.morality, sc.earth, sc.english
+                ];
+            });
+
+            const worksheet = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, `ពិន្ទុខែ ${currentMonth}`);
+            XLSX.writeFile(workbook, `បញ្ជីពិន្ទុ_ខែ_${currentMonth}.xlsx`);
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
+            document.getElementById('section-' + tabName).classList.add('active');
+            document.getElementById('menu-' + tabName).classList.add('active');
+        }
+
+        window.onload = () => {
+            generateMonthTabs();
+            document.getElementById('scoreTableTitle').innerText = `📊 តារាងពិន្ទុ និងចំណាត់ថ្នាក់សិស្ស — ប្រចាំខែ ${currentMonth}`;
+            loadDataFromSheet();
+        };
+    </script>
+</body>
+</html>
