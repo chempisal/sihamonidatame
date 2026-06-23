@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>បញ្ជីដកបេក្ខភាព</title>
+    <style>
+        /* កំណត់ពុម្ពអក្សរ និងរចនាបថទូទៅ */
+        @import url('https://fonts.googleapis.com/css2?family=Hanuman:wght@400;700&family=Moul&display=swap');
+
+        body {
+            font-family: 'Hanuman', 'Khmer OS Battambang', sans-serif;
+            font-size: 14px;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            width: 210mm; /* ទំហំក្រដាស A4 */
+            min-height: 297mm;
+            background: white;
+            margin: auto;
+            padding: 20mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* រចនាបថសម្រាប់ប៊ូតុងបញ្ជា */
+        .controls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            margin: 5px 5px;
+            font-family: 'Hanuman', sans-serif;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-add { background-color: #9b59b6; }
+        .btn-save { background-color: #2c3e50; }
+        .btn-edit { background-color: #f39c12; }
+        .btn-print { background-color: #2980b9; }
+        .btn-word { background-color: #e67e22; }
+        .btn-excel-export { background-color: #1f7244; } /* ពណ៌បៃតង Excel */
+        .btn-excel-import { background-color: #105b33; } /* ពណ៌បៃតងចាស់ Excel */
+        .btn-delete { background-color: #e74c3c; padding: 5px 10px; font-size: 12px; }
+
+        /* រចនាបថផ្នែកក្បាលឯកសារ */
+        .header-nation {
+            text-align: center;
+            font-family: 'Moul', 'Khmer OS Muol Light', serif;
+            margin-bottom: 30px;
+        }
+        .header-nation h2 { margin: 0; font-size: 16px; }
+        .header-nation h3 { margin: 5px 0 0 0; font-size: 14px; }
+
+        .header-left {
+            font-family: 'Moul', 'Khmer OS Muol Light', serif;
+            font-size: 12px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .document-title {
+            text-align: center;
+            font-family: 'Moul', 'Khmer OS Muol Light', serif;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        /* រចនាបថតារាង */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 5px;
+            vertical-align: middle;
+        }
+        th {
+            font-family: 'Hanuman', sans-serif;
+            font-weight: bold;
+            background-color: #f9fafb;
+        }
+
+        /* រចនាបថផ្នែកខាងក្រោមឯកសារ */
+        .footer-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            line-height: 1.8;
+        }
+        .footer-left, .footer-right {
+            width: 45%;
+            text-align: center;
+        }
+
+        /* Loading overlay */
+        .loading {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255,255,255,0.9);
+            padding: 20px; border: 1px solid #ccc;
+            border-radius: 5px; font-weight: bold;
+            display: none; z-index: 10;
+        }
+
+        /* លាក់ប៊ូតុងពេលព្រីន និង ទាញយកជា Word */
+        @media print {
+            body { background-color: white; padding: 0; margin: 0; }
+            .container { box-shadow: none; width: 100%; padding: 0; margin: 0; }
+            .no-print { display: none !important; }
+        }
+        .editing-mode {
+            background-color: #fffbcc;
+            border: 1px dashed #f39c12;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+
+    <div class="controls no-print">
+        <button class="btn btn-add" onclick="addNewRow()">➕ បន្ថែមបេក្ខភាព (Add)</button>
+        <button class="btn btn-edit" onclick="toggleEdit()" id="editBtn">📝 កែទិន្នន័យ (Edit : Off)</button>
+        <button class="btn btn-save" onclick="saveDataToSheet()">💾 រក្សាទុកទៅ Sheet (Save)</button>
+        <button class="btn btn-print" onclick="window.print()">🖨️ ព្រីនឯកសារ (Print)</button>
+        <button class="btn btn-word" onclick="exportWord()">📥 ទាញយកជា Word</button>
+        <button class="btn btn-excel-export" onclick="exportExcel()">📊 នាំចេញជា Excel</button>
+        <button class="btn btn-excel-import" onclick="document.getElementById('importFile').click()">📤 នាំចូលពី Excel</button>
+        <input type="file" id="importFile" accept=".xlsx, .xls" style="display: none;" onchange="importExcel(event)">
+    </div>
+
+    <div class="container" id="document-content">
+        
+        <div id="loadingStatus" class="loading no-print">⏳ កំពុងដំណើរការទិន្នន័យ...</div>
+
+        <div class="header-nation">
+            <h2>ព្រះរាជាណាចក្រកម្ពុជា</h2>
+            <h3>ជាតិ សាសនា ព្រះមហាក្សត្រ</h3>
+            <div>❧☙</div>
+        </div>
+
+        <div class="header-left">
+            មន្ទីរអប់រំ យុវជន និងកីឡាខេត្តកំពង់ឆ្នាំង<br>
+            វិទ្យាល័យ ព្រះនរោត្តមសីហមុនី<br>
+            ថ្នាក់ទី៩
+        </div>
+
+        <div class="document-title">
+            <br>សំណើដកបេក្ខភាពប្រឡងសញ្ញាបត្រមធ្យមសិក្សាបឋមភូមិ<br>
+            សម័យប្រឡង៖ ០៦ កក្កដា ២០២៦<br>
+            ស្រង់ឡើងវិញឈ្មោះសិស្សដែលត្រូវដកបេក្ខភាពទាំងពីរឆមាស
+        </div>
+
+        <table id="mainTable">
+            <thead>
+                <tr>
+                    <th>ល.រ</th>
+                    <th>លេខរៀងក្នុងបញ្ជីបេក្ខភាព</th>
+                    <th>គោត្តនាម និងនាម</th>
+                    <th>ភេទ</th>
+                    <th>ថ្ងៃខែឆ្នាំកំណើត</th>
+                    <th>មូលហេតុ</th>
+                    <th>ផ្សេងៗ</th>
+                    <th class="no-print">សកម្មភាព</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+            </tbody>
+        </table>
+
+        <div class="footer-section">
+            <div class="footer-left">
+                <div style="text-align: left; margin-bottom: 30px;" id="totalCountLabel">បញ្ឈប់បញ្ជីត្រឹមចំនួន ០នាក់ ស្រី០នាក់</div>
+                <div>បានឃើញ និងឯកភាព</div>
+                <div>ថ្ងៃអង្គារ ៩កើត ខែបឋមាសាឍ ឆ្នាំច សំរឹទ្ធិស័ក ព.ស ២៥៧០</div>
+                <div>កំពង់ឆ្នាំងថ្ងៃទី២៣ ខែមិថុនា ឆ្នាំ២០២៦</div>
+                <div style="font-family: 'Moul', serif;">នាយក / នាយិកាសាលា</div>
+            </div>
+            
+            <div class="footer-right">
+                <div>ថ្ងៃអង្គារ ៩កើត ខែបឋមាសាឍ ឆ្នាំច សំរឹទ្ធិស័ក ព.ស ២៥៧០</div>
+                <div>កំពង់ឆ្នាំងថ្ងៃទី២៣ ខែមិថុនា ឆ្នាំ២០២៦</div>
+                <div style="font-family: 'Moul', serif;">អ្នកបញ្ចូលទិន្នន័យ</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // 🔗 ដាក់ជំនួសដោយតំណភ្ជាប់ Web App URL របស់ Google Apps Script របស់អ្នក
+        const API_URL = "https://script.google.com/macros/s/AKfycbweXqZJmRxB2MH6mThjr2iJEt1qvzswBZECyM8kaO0E8n3T3mxWCSjVX_nk6v2sPc2cxw/exec";
+
+        let isEditing = false;
+
+        // បើក/បិទ Mode កែប្រែអត្ថបទផ្ទាល់នៅលើតារាង
+        function toggleEdit() {
+            isEditing = !isEditing;
+            let docContent = document.getElementById('document-content');
+            let btn = document.getElementById('editBtn');
+            
+            if(isEditing) {
+                docContent.contentEditable = "true";
+                docContent.classList.add('editing-mode');
+                btn.innerHTML = "កំពុងកែ... (Edit : On)";
+                btn.style.backgroundColor = "#e67e22";
+            } else {
+                docContent.contentEditable = "false";
+                docContent.classList.remove('editing-mode');
+                btn.innerHTML = "កែទិន្នន័យ (Edit : Off)";
+                btn.style.backgroundColor = "#f39c12";
+            }
+        }
+
+        // បន្ថែមជួរថ្មីទទេចូលតារាង ដើម្បីបំពេញបន្ថែម
+        function addNewRow() {
+            let tbody = document.getElementById("tableBody");
+            let nextNo = tbody.rows.length + 1;
+            let tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${nextNo}</td>
+                <td>0000000</td>
+                <td>ឈ្មោះបេក្ខជន</td>
+                <td>ប្រុស/ស្រី</td>
+                <td>ថ្ងៃខែឆ្នាំកំណើត</td>
+                <td>មូលហេតុដកបេក្ខភាព</td>
+                <td>ផ្សេងៗ</td>
+                <td class="no-print"><button class="btn btn-delete" onclick="deleteRow(this)">លុប</button></td>
+            `;
+            tbody.appendChild(tr);
+            updateSummaryCount();
+        }
+
+        // លុបជួរតារាងចេញ
+        function deleteRow(btn) {
+            if(confirm("តើអ្នកពិតជាចង់លុបបេក្ខភាពនេះមែនទេ? (ចំណាំ៖ ត្រូវចុចប៊ូតុងរក្សាទុកដើម្បីរក្សាការផ្លាស់ប្តូរចូល Sheet)")) {
+                let row = btn.parentNode.parentNode;
+                row.parentNode.removeChild(row);
+                recalculateRowNumbers();
+                updateSummaryCount();
+            }
+        }
+
+        // រៀបចំលេខរៀង ល.រ (No.) ឡើងវិញក្រោយការលុប ឬកែប្រែ
+        function recalculateRowNumbers() {
+            let rows = document.querySelectorAll("#tableBody tr");
+            rows.forEach((row, index) => {
+                row.cells[0].innerText = index + 1;
+            });
+        }
+
+        // ធ្វើបច្ចុប្បន្នភាពចំនួនសរុប (ប្រុស/ស្រី) នៅផ្នែកខាងក្រោមស្វ័យប្រវត្តិ
+        function updateSummaryCount() {
+            let rows = document.querySelectorAll("#tableBody tr");
+            let total = rows.length;
+            let femaleCount = 0;
+            rows.forEach(row => {
+                let genderText = row.cells[3].innerText.trim();
+                if(genderText === "ស្រី") femaleCount++;
+            });
+            document.getElementById("totalCountLabel").innerText = `បញ្ឈប់បញ្ជីត្រឹមចំនួន ${total}នាក់ ស្រី${femaleCount}នាក់`;
+        }
+
+        // 📥 ១. មុខងារទាញយកទិន្នន័យពី Google Sheet មកបង្ហាញនៅលើតារាង (Read Data)
+        async function loadDataFromSheet() {
+            document.getElementById("loadingStatus").style.display = "block";
+            try {
+                let response = await fetch(`${API_URL}?action=read`);
+                if(response.ok) {
+                    let data = await response.json();
+                    let tbody = document.getElementById("tableBody");
+                    tbody.innerHTML = ""; // សម្អាតទិន្នន័យចាស់
+                    
+                    if(data.length > 0) {
+                        data.forEach((item, index) => {
+                            let tr = document.createElement("tr");
+                            tr.innerHTML = `
+                                <td>${index + 1}</td>
+                                <td>${item.candidateId}</td>
+                                <td>${item.name}</td>
+                                <td>${item.gender}</td>
+                                <td>${item.dob}</td>
+                                <td>${item.reason}</td>
+                                <td>${item.others}</td>
+                                <td class="no-print"><button class="btn btn-delete" onclick="deleteRow(this)">លុប</button></td>
+                            `;
+                            tbody.appendChild(tr);
+                        });
+                    } else {
+                        addNewRow(); // ប្រសិនបើគ្មានទិន្នន័យទាល់តែសោះ ឲ្យបង្កើតជួរគំរូមួយ
+                    }
+                    updateSummaryCount();
+                }
+            } catch (error) {
+                console.error("Error loading data:", error);
+                alert("មិនអាចទាញទិន្នន័យពី Google Sheet បានទេ!");
+            }
+            document.getElementById("loadingStatus").style.display = "none";
+        }
+
+        // 💾 ២. មុខងាររក្សាទុកទិន្នន័យដែលបានកែប្រែទាំងអស់ទៅ Google Sheet (Save/Update Data)
+        async function saveDataToSheet() {
+            document.getElementById("loadingStatus").style.display = "block";
+            let rows = document.querySelectorAll("#tableBody tr");
+            let candidatesList = [];
+
+            rows.forEach(row => {
+                candidatesList.push({
+                    candidateId: row.cells[1].innerText.trim(),
+                    name: row.cells[2].innerText.trim(),
+                    gender: row.cells[3].innerText.trim(),
+                    dob: row.cells[4].innerText.trim(),
+                    reason: row.cells[5].innerText.trim(),
+                    others: row.cells[6].innerText.trim()
+                });
+            });
+
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'saveAll', data: candidatesList })
+                });
+                alert("រក្សាទុកទិន្នន័យទៅកាន់ Google Sheet បានជោគជ័យ! 🎉");
+                loadDataFromSheet(); // ទាញយកឡើងវិញដើម្បីផ្ទៀងផ្ទាត់ភាពត្រឹមត្រូវ
+            } catch (error) {
+                console.error("Error saving data:", error);
+                alert("ការរក្សាទុកទិន្នន័យបរាជ័យ!");
+            }
+            document.getElementById("loadingStatus").style.display = "none";
+        }
+
+        // ៣. មុខងារ ទាញយកជាឯកសារ Word (Export to Word)
+        function exportWord() {
+            let clone = document.getElementById("document-content").cloneNode(true);
+            let noPrintElements = clone.querySelectorAll('.no-print');
+            noPrintElements.forEach(el => el.remove());
+
+            clone.contentEditable = "false";
+            clone.classList.remove('editing-mode');
+
+            let header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML To Doc</title><style>table{border-collapse:collapse;width:100%;}th,td{border:1px solid black;padding:5px;text-align:center;}body{font-family:'Khmer OS Battambang',sans-serif;}</style></head><body>";
+            let footer = "</body></html>";
+            
+            let html = header + clone.innerHTML + footer;
+            let blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+            let url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+            let filename = 'បញ្ជីដកបេក្ខភាព.doc';
+            
+            let downloadLink = document.createElement("a");
+            document.body.appendChild(downloadLink);
+            
+            if(navigator.msSaveOrOpenBlob) {
+                navigator.msSaveOrOpenBlob(blob, filename);
+            } else {
+                downloadLink.href = url;
+                downloadLink.download = filename;
+                downloadLink.click();
+            }
+            document.body.removeChild(downloadLink);
+        }
+
+        // 📊 ៤. មុខងារនាំទិន្នន័យចេញជា Excel (Export to Excel)
+        function exportExcel() {
+            let rows = document.querySelectorAll("#tableBody tr");
+            let data = [];
+            
+            // កំណត់ក្បាលជួរ (Header) របស់ Excel
+            data.push(["ល.រ", "លេខរៀងក្នុងបញ្ជីបេក្ខភាព", "គោត្តនាម និងនាម", "ភេទ", "ថ្ងៃខែឆ្នាំកំណើត", "មូលហេតុ", "ផ្សេងៗ"]);
+            
+            // ទាញយកទិន្នន័យពីតារាងតាមជួរនីមួយៗ
+            rows.forEach((row, index) => {
+                data.push([
+                    index + 1,
+                    row.cells[1].innerText.trim(),
+                    row.cells[2].innerText.trim(),
+                    row.cells[3].innerText.trim(),
+                    row.cells[4].innerText.trim(),
+                    row.cells[5].innerText.trim(),
+                    row.cells[6].innerText.trim()
+                ]);
+            });
+            
+            // បង្កើត Worksheet និង Workbook
+            let ws = XLSX.utils.aoa_to_sheet(data);
+            let wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "បញ្ជីដកបេក្ខភាព");
+            
+            // ទាញយកជាឯកសារ Excel (.xlsx)
+            XLSX.writeFile(wb, "បញ្ជីដកបេក្ខភាព.xlsx");
+        }
+
+        // 📤 ៥. មុខងារនាំទិន្នន័យចូលពី Excel (Import from Excel)
+        function importExcel(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+            
+            document.getElementById("loadingStatus").style.display = "block";
+            let reader = new FileReader();
+            
+            reader.onload = function(e) {
+                let data = new Uint8Array(e.target.result);
+                let workbook = XLSX.read(data, { type: 'array' });
+                let firstSheetName = workbook.SheetNames[0];
+                let worksheet = workbook.Sheets[firstSheetName];
+                
+                // បម្លែងទិន្នន័យក្នុង Sheet ទៅជា Array
+                let json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                
+                let tbody = document.getElementById("tableBody");
+                tbody.innerHTML = ""; // សម្អាតទិន្នន័យចាស់លើតារាងចោល
+                
+                let addedCount = 0;
+                // ចាប់ផ្តើមពីជួរទី២ (index 1) ព្រោះជួរទី១ ជា Header
+                for (let i = 1; i < json.length; i++) {
+                    let rowData = json[i];
+                    if (!rowData || rowData.length === 0) continue; // រំលងជួរទទេ
+                    
+                    let nextNo = tbody.rows.length + 1;
+                    let tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${nextNo}</td>
+                        <td>${rowData[1] || ''}</td>
+                        <td>${rowData[2] || ''}</td>
+                        <td>${rowData[3] || ''}</td>
+                        <td>${rowData[4] || ''}</td>
+                        <td>${rowData[5] || ''}</td>
+                        <td>${rowData[6] || ''}</td>
+                        <td class="no-print"><button class="btn btn-delete" onclick="deleteRow(this)">លុប</button></td>
+                    `;
+                    tbody.appendChild(tr);
+                    addedCount++;
+                }
+                
+                recalculateRowNumbers();
+                updateSummaryCount();
+                document.getElementById("loadingStatus").style.display = "none";
+                alert("បាននាំចូលទិន្នន័យចំនួន " + addedCount + " ជួរជោគជ័យ! 🎉\n(សម្គាល់៖ សូមចុចប៊ូតុង 'រក្សាទុកទៅ Sheet' ដើម្បីរក្សាទុកចូល Google Sheet)");
+                event.target.value = ''; // សម្អាត Input file ឡើងវិញ
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        // ដំណើរការទាញទិន្នន័យនៅពេលបើកទំព័រដំបូង
+        window.onload = loadDataFromSheet;
+    </script>
+</body>
+</html>
