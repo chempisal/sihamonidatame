@@ -61,7 +61,28 @@
         .btn:active { transform: translateY(0); }
 
         /* ពណ៌ប៊ូតុងនីមួយៗ (Gradient Colors) */
-        .btn-home { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .btn-home { 
+            background: linear-gradient(135deg, #00F260, #0575E6); 
+            box-shadow: 0 4px 15px rgba(5, 117, 230, 0.35);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-home::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        .btn-home:hover::before {
+            left: 100%;
+        }
+        .btn-home:hover {
+            box-shadow: 0 6px 20px rgba(5, 117, 230, 0.5);
+            background: linear-gradient(135deg, #0575E6, #00F260);
+        }
+        
         .btn-print { background: linear-gradient(135deg, #007bff, #00c6ff); }
         .btn-word { background: linear-gradient(135deg, #1f4068, #162447); }
         .btn-download { background: linear-gradient(135deg, #8e2de2, #4a00e0); }
@@ -153,7 +174,7 @@
         .signatures-container {
             position: relative;
             margin-top: 30px;
-            min-height: 320px; /* កាត់បន្ថយពី 420px ដើម្បីកុំឱ្យហៀរទំព័រ */
+            min-height: 320px; 
             border-top: 1px dashed #e2e8f0;
             padding-top: 15px;
         }
@@ -193,7 +214,7 @@
         @media print {
             @page {
                 size: A4;
-                margin: 0; /* ការពារ browser margin កុំឱ្យជាន់គ្នា */
+                margin: 0; 
             }
             
             body { 
@@ -208,7 +229,7 @@
             
             .page-container { 
                 box-shadow: none; 
-                padding: 20mm 20mm 20mm 20mm; /* រក្សារចនាសម្ព័ន្ធ A4 ឱ្យនៅតែ ១ ផេកគត់ */
+                padding: 20mm 20mm 20mm 20mm; 
                 margin: 0; 
                 width: 210mm;
                 height: 297mm;
@@ -250,9 +271,7 @@
 <body>
 
 <div class="control-panel">
-    <button class="btn btn-home" onclick="window.location.index.html">🏠 ទំព័រដើម</button>
-  
-</button>
+    <button class="btn btn-home" onclick="goToHome()">🏠 ទំព័រដើម</button>
     <button class="btn btn-download" onclick="downloadTemplate()">📥 ទាញយកពុម្ពគំរូ (Template)</button>
     <button class="btn btn-upload" onclick="triggerUpload()">📤 ផ្ទុកពុម្ពគំរូចូល</button>
     <button class="btn btn-print" onclick="window.print()">🖨️ បោះពុម្ភលិខិត (PDF)</button>
@@ -357,7 +376,7 @@
     // --- មុខងារប៊ូតុងទៅផ្ទះ ---
     function goToHome() {
         window.location.href = 'index.html'; 
-        alert('ប្រព័ន្ធកំពង់នាំលោកអ្នកត្រឡប់ទៅកាន់ទំព័រដើមវិញ!');
+        alert('ប្រព័ន្ធកំពុងនាំលោកអ្នកត្រឡប់ទៅកាន់ទំព័រដើមវិញ!');
     }
 
     // --- មុខងារទាញផ្លាស់ទី (Drag and Drop) ---
@@ -370,7 +389,6 @@
             let isDragging = false;
             let startX, startY, initialLeft, initialTop;
 
-            // លុប Event ចាស់ចេញសិនដើម្បីកុំឱ្យជាន់គ្នាពេល Load Template ឡើងវិញ
             const newHandle = handle.cloneNode(true);
             handle.parentNode.replaceChild(newHandle, handle);
 
@@ -407,7 +425,6 @@
         });
     }
 
-    // ដំណើរការ Drag នៅពេលបើកទំព័រដំបូង
     window.addEventListener('DOMContentLoaded', bindDragEvents);
 
     // --- មុខងារទាញយកពុម្ពគំរូ (Download Template) ---
@@ -440,9 +457,7 @@
             try {
                 const data = JSON.parse(e.target.result);
                 if (data.html) {
-                    // ជំនួសខ្លឹមសារទំព័រទាំងមូលជាមួយនឹងទិន្នន័យដែលបានរក្សាទុក
                     document.getElementById('document-page').innerHTML = data.html;
-                    // ចាំបាច់ត្រូវភ្ជាប់មុខងារ Drag ទៅកាន់ប្រអប់ហត្ថលេខាថ្មីឡើងវិញ
                     bindDragEvents();
                     alert('📥 បានផ្ទុកពុម្ពគំរូ (Template) ចូលដោយជោគជ័យ!');
                 } else {
@@ -453,7 +468,6 @@
             }
         };
         reader.readAsText(file);
-        // Reset ដែនតម្លៃ input ដើម្បីអាចរើសឯកសារដដែលម្តងទៀតបាន
         event.target.value = '';
     }
 
