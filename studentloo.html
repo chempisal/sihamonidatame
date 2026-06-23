@@ -43,28 +43,6 @@
             border-bottom: 1px dashed #22c55e;
         }
         
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            body {
-                background-color: white;
-                padding: 0;
-            }
-            .print-container {
-                box-shadow: none !important;
-                border: none !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
-            }
-            .editable-zone:hover, .editable-zone:focus {
-                background-color: transparent !important;
-                border: none !important;
-            }
-
-            /* ស្ទីលសម្រាប់គំនូរជីវចលរង្វង់ Loading */
         .loader {
             border: 4px solid #f3f3f3;
             border-radius: 50%;
@@ -105,7 +83,7 @@
     </style>
 </head>
 <body class="p-4 md:p-8">
-<div id="splash-screen" class="fixed inset-0 bg-slate-900 flex flex-col justify-center items-center z-50 transition-opacity duration-1000">
+    <div id="splash-screen" class="fixed inset-0 bg-slate-900 flex flex-col justify-center items-center z-50 transition-opacity duration-1000">
         <div class="text-center p-6 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 shadow-2xl max-w-md mx-4 animate-fade-in">
             <div class="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg border-2 border-white/50">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -126,149 +104,147 @@
     </div>
 
     <div id="main-content" class="opacity-0 transition-opacity duration-1000 pointer-events-none">
+        <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-md mb-6 no-print">
+            <div class="flex flex-col md:flex-row justify-between items-center border-b pb-4 mb-4 gap-4">
+                <h2 class="text-xl font-bold font-moul text-blue-800">ប្រព័ន្ធគ្រប់គ្រងវិន័យសិស្ស (បំបែក ១២ ខែដាច់ពីគ្នា)</h2>
+                
+                <div class="bg-amber-50 p-2 rounded border border-amber-300 flex items-center gap-2">
+                    <label class="text-sm font-bold text-amber-900">សូមជ្រើសរើសខែគ្រប់គ្រង៖</label>
+                    <select id="monthSelector" onchange="changeMonth()" class="p-2 border border-amber-450 rounded bg-white font-bold text-blue-900 cursor-pointer">
+                        <option value="មករា">ខែមករា</option>
+                        <option value="កុម្ភៈ">ខែកុម្ភៈ</option>
+                        <option value="មីនា">ខែមីនា</option>
+                        <option value="មេសា">ខែមេសា</option>
+                        <option value="ឧសភា">ខែឧសភា</option>
+                        <option value="មិថុនា" selected>ខែមិថុនា</option>
+                        <option value="កក្កដា">ខែកក្កដា</option>
+                        <option value="សីហា">ខែសីហា</option>
+                        <option value="កញ្ញា">ខែកញ្ញា</option>
+                        <option value="តុលា">ខែតុលា</option>
+                        <option value="វិច្ឆិកា">ខែវិច្ឆិកា</option>
+                        <option value="ធ្នូ">ខែធ្នូ</option>
+                    </select>
 
-    <div class="max-w-5xl mx-auto bg-white p-6 rounded-lg shadow-md mb-6 no-print">
-        <div class="flex flex-col md:flex-row justify-between items-center border-b pb-4 mb-4 gap-4">
-            <h2 class="text-xl font-bold font-moul text-blue-800">ប្រព័ន្ធគ្រប់គ្រងវិន័យសិស្ស (បំបែក ១២ ខែដាច់ពីគ្នា)</h2>
+                    <a href="index.html" class="btn-fancy bg-white/10 backdrop-blur-md text-blue-500 border border-blue-30 px-7 py-3.5 rounded-2xl font-semibold shadow-xl flex items-center gap-3 hover:bg-orange-500 hover:text-[#179BB5]">
+                        <span class="text-2xl">🏛️</span> ទៅផ្ទាំងដើម
+                    </a>
+                </div>
+            </div>
             
-            <div class="bg-amber-50 p-2 rounded border border-amber-300 flex items-center gap-2">
-                <label class="text-sm font-bold text-amber-900">សូមជ្រើសរើសខែគ្រប់គ្រង៖</label>
-                <select id="monthSelector" onchange="changeMonth()" class="p-2 border border-amber-450 rounded bg-white font-bold text-blue-900 cursor-pointer">
-                    <option value="មករា">ខែមករា</option>
-                    <option value="កុម្ភៈ">ខែកុម្ភៈ</option>
-                    <option value="មីនា">ខែមីនា</option>
-                    <option value="មេសា">ខែមេសា</option>
-                    <option value="ឧសភា">ខែឧសភា</option>
-                    <option value="មិថុនា" selected>ខែមិថុនា</option>
-                    <option value="កក្កដា">ខែកក្កដា</option>
-                    <option value="សីហា">ខែសីហា</option>
-                    <option value="កញ្ញា">ខែកញ្ញា</option>
-                    <option value="តុលា">ខែតុលា</option>
-                    <option value="វិច្ឆិកា">ខែវិច្ឆិកា</option>
-                    <option value="ធ្នូ">ខែធ្នូ</option>
-                </select>
+            <form id="studentForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded border border-gray-200 mb-4">
+                <input type="hidden" id="editIndex" value="-1">
+                <div>
+                    <label class="block text-xs font-bold text-gray-700">គោត្តនាម-នាម</label>
+                    <input type="text" id="name" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700">ភេទ</label>
+                    <select id="gender" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+                        <option value="ប្រុស">ប្រុស</option>
+                        <option value="ស្រី">ស្រី</option>
+                        <option value=" ">ទទេ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700">ថ្នាក់</label>
+                    <input type="text" id="grade" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700">កំហុស</label>
+                    <input type="text" id="mistake" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700">ចំនួន</label>
+                    <input type="number" id="count" value="1" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700">ការពិន័យ</label>
+                    <input type="text" id="action" value="អប់រំ" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700">កាលបរិច្ឆេទ</label>
+                    <input type="text" id="date" placeholder="12.មិថុនា.2026" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-700">ផ្សេងៗ</label>
+                    <input type="text" id="other" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
+                </div>
+                <div class="md:col-span-4 flex justify-end gap-2 border-t pt-3 mt-2">
+                    <button type="button" onclick="clearForm()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm cursor-pointer">សម្អាត Form</button>
+                    <button type="submit" id="submitBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm cursor-pointer">រក្សាទុក</button>
+                </div>
+            </form>
 
-                <a href="index.html" class="btn-fancy bg-white/10 backdrop-blur-md text-blue-500 border border-blue-30 px-7 py-3.5 rounded-2xl font-semibold shadow-xl flex items-center gap-3 hover:bg-orange-500 hover:text-[#179BB5]">
-                <span class="text-2xl">🏛️</span> ទៅផ្ទាំងដើម
-            </a>
+            <div class="flex flex-wrap justify-between items-center gap-2 bg-blue-50 p-3 rounded border border-blue-200">
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="exportToExcel()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-bold cursor-pointer">📥 នាំចេញខែនេះទៅ Excel</button>
+                    <button onclick="exportToWord()" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-bold cursor-pointer">📝 នាំចេញខែនេះទៅ Word</button>
+                    <button onclick="exportBackup()" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-bold cursor-pointer">💾 រក្សាទុកហ្វាល់ចម្លង (Backup)</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label class="text-xs font-bold text-gray-700">នាំចូលហ្វាល់ចម្លងវិញ៖</label>
+                    <input type="file" id="importFile" accept=".json" onchange="importBackup(event)" class="text-xs block w-full text-gray-500 file:mr-4 file:py-1 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer"/>
+                </div>
+                <div>
+                    <button onclick="window.print()" class="px-5 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 text-xs font-bold cursor-pointer">🖨️ បោះពុម្ពលិខិត (Print)</button>
+                </div>
             </div>
         </div>
-        
-        <form id="studentForm" class="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50 p-4 rounded border border-gray-200 mb-4">
-            <input type="hidden" id="editIndex" value="-1">
-            <div>
-                <label class="block text-xs font-bold text-gray-700">គោត្តនាម-នាម</label>
-                <input type="text" id="name" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-700">ភេទ</label>
-                <select id="gender" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
-                    <option value="ប្រុស">ប្រុស</option>
-                    <option value="ស្រី">ស្រី</option>
-                    <option value=" ">ទទេ</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-700">ថ្នាក់</label>
-                <input type="text" id="grade" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-700">កំហុស</label>
-                <input type="text" id="mistake" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-700">ចំនួន</label>
-                <input type="number" id="count" value="1" required class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-700">ការពិន័យ</label>
-                <input type="text" id="action" value="អប់រំ" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-700">កាលបរិច្ឆេទ</label>
-                <input type="text" id="date" placeholder="12.មិថុនា.2026" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-700">ផ្សេងៗ</label>
-                <input type="text" id="other" class="mt-1 block w-full p-2 border border-gray-300 rounded bg-white">
-            </div>
-            <div class="md:col-span-4 flex justify-end gap-2 border-t pt-3 mt-2">
-                <button type="button" onclick="clearForm()" class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500 text-sm cursor-pointer">សម្អាត Form</button>
-                <button type="submit" id="submitBtn" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm cursor-pointer">រក្សាទុក</button>
-            </div>
-        </form>
 
-        <div class="flex flex-wrap justify-between items-center gap-2 bg-blue-50 p-3 rounded border border-blue-200">
-            <div class="flex gap-2">
-                <button onclick="exportToExcel()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-bold cursor-pointer">📥 នាំចេញខែនេះទៅ Excel</button>
-                <button onclick="exportBackup()" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-bold cursor-pointer">💾 រក្សាទុកហ្វាល់ចម្លង (Backup)</button>
-            </div>
-            <div class="flex items-center gap-2">
-                <label class="text-xs font-bold text-gray-700">នាំចូលហ្វាល់ចម្លងវិញ៖</label>
-                <input type="file" id="importFile" accept=".json" onchange="importBackup(event)" class="text-xs block w-full text-gray-500 file:mr-4 file:py-1 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 cursor-pointer"/>
-            </div>
-            <div>
-                <button onclick="window.print()" class="px-5 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 text-xs font-bold cursor-pointer">🖨️ បោះពុម្ពលិខិត (Print)</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="printArea" class="max-w-4xl mx-auto bg-white p-10 md:p-14 border border-gray-300 shadow-xl print-container text-black">
-        
-        <table style="width: 100%; border: none !important; margin-bottom: 20px;" class="excel-header-table">
-            <tr style="border: none !important;">
-                <td style="text-align: left; font-weight: bold; font-size: 12px; border: none !important; width: 50%; line-height: 1.5;">
-                    <br>ការិយាល័យ អប់រំ យុវជននិងកីឡាស្រុកជលគិរី<br>
-                    វិទ្យាល័យព្រះនរោត្តម សីហមុនី
-                </td>
-                <td style="text-align: center; font-family: 'Moul', serif; font-size: 13px; border: none !important; width: 50%; line-height: 1.8; vertical-align: top;">
-                    ព្រះរាជាណាចក្រកម្ពុជា<br>
-                    ជាតិ សាសនា ព្រះមហាក្សត្រ
-                </td>
-            </tr>
-        </table>
-
-        <div class="text-center my-6">
-            <h1 class="font-moul text-base tracking-wide">បញ្ជីឈ្មោះសិស្សប្រព្រឹត្តខុសវិន័យសាលា</h1>
-            <p id="currentMonthTitle" class="font-moul text-xs mt-2">ប្រចាំខែមិថុនា</p>
-        </div>
-
-        <table id="mainDataTable" class="w-full text-center">
-            <thead>
-                <tr class="bg-gray-100 font-bold">
-                    <td style="width: 45px; font-weight: bold; text-align: center;">ល.រ</td>
-                    <td style="font-weight: bold; text-align: center;">គោត្តនាម-នាម</td>
-                    <td style="width: 50px; font-weight: bold; text-align: center;">ភេទ</td>
-                    <td style="width: 60px; font-weight: bold; text-align: center;">ថ្នាក់</td>
-                    <td style="font-weight: bold; text-align: center;">កំហុស</td>
-                    <td style="width: 50px; font-weight: bold; text-align: center;">ចំនួន</td>
-                    <td style="width: 65px; font-weight: bold; text-align: center;">ការពិន័យ</td>
-                    <td style="width: 110px; font-weight: bold; text-align: center;">កាលបរិច្ឆេទ</td>
-                    <td style="width: 85px; font-weight: bold; text-align: center;">ផ្សេងៗ</td>
-                    <td class="no-print" style="width: 90px; text-align: center;">កែប្រែ</td>
+        <div id="printArea" class="max-w-4xl mx-auto bg-white p-10 md:p-14 border border-gray-300 shadow-xl print-container text-black">
+            <table style="width: 100%; border: none !important; margin-bottom: 20px;" class="excel-header-table">
+                <tr style="border: none !important;">
+                    <td style="text-align: left; font-weight: bold; font-size: 12px; border: none !important; width: 50%; line-height: 1.5;">
+                        <br>ការិយាល័យ អប់រំ យុវជននិងកីឡាស្រុកជលគិរី<br>
+                        វិទ្យាល័យព្រះនរោត្តម សីហមុនី
+                    </td>
+                    <td style="text-align: center; font-family: 'Moul', serif; font-size: 13px; border: none !important; width: 50%; line-height: 1.8; vertical-align: top;">
+                        ព្រះរាជាណាចក្រកម្ពុជា<br>
+                        ជាតិ សាសនា ព្រះមហាក្សត្រ
+                    </td>
                 </tr>
-            </thead>
-            <tbody id="studentTableBody">
-            </tbody>
-        </table>
+            </table>
 
-        <table style="width: 100%; border: none !important; margin-top: 40px;" class="excel-footer-table">
-            <tr style="border: none !important;">
-                <td style="border: none !important; width: 40%;"></td>
-                <td style="text-align: center; border: none !important; width: 60%; font-size: 14px; line-height: 1.7; white-space: nowrap;">
-                    <div contenteditable="true" id="khmerDate" class="editable-zone">ថ្ងៃអាទិត្យ ៧កើត ខែបឋមាសាឍ ឆ្នាំខាល ចត្វាស័ក ព.ស. ២៥៧០</div>
-                    <div contenteditable="true" id="solarDate" class="editable-zone">ស្រុកជលគិរី, ថ្ងៃទី២១ ខែមិថុនា ឆ្នាំ២០២៦</div>
-                    <div contenteditable="true" id="signatureTitle" class="editable-zone font-bold mt-1">អ្នកធ្វើតារាង</div>
-                    <br><br>
-                    <div contenteditable="true" id="signerName" class="editable-zone font-bold text-base">សូមបំពេញឈ្មោះ</div>
-                </td>
-            </tr>
-        </table>
+            <div class="text-center my-6">
+                <h1 class="font-moul text-base tracking-wide">បញ្ជីឈ្មោះសិស្សប្រព្រឹត្តខុសវិន័យសាលា</h1>
+                <p id="currentMonthTitle" class="font-moul text-xs mt-2">ប្រចាំខែមិថុនា</p>
+            </div>
+
+            <table id="mainDataTable" class="w-full text-center">
+                <thead>
+                    <tr class="bg-gray-100 font-bold">
+                        <td style="width: 45px; font-weight: bold; text-align: center;">ល.រ</td>
+                        <td style="font-weight: bold; text-align: center;">គោត្តនាម-នាម</td>
+                        <td style="width: 50px; font-weight: bold; text-align: center;">ភេទ</td>
+                        <td style="width: 60px; font-weight: bold; text-align: center;">ថ្នាក់</td>
+                        <td style="font-weight: bold; text-align: center;">កំហុស</td>
+                        <td style="width: 50px; font-weight: bold; text-align: center;">ចំនួន</td>
+                        <td style="width: 65px; font-weight: bold; text-align: center;">ការពិន័យ</td>
+                        <td style="width: 110px; font-weight: bold; text-align: center;">កាលបរិច្ឆេទ</td>
+                        <td style="width: 85px; font-weight: bold; text-align: center;">ផ្សេងៗ</td>
+                        <td class="no-print" style="width: 90px; text-align: center;">កែប្រែ</td>
+                    </tr>
+                </thead>
+                <tbody id="studentTableBody">
+                </tbody>
+            </table>
+
+            <table style="width: 100%; border: none !important; margin-top: 40px;" class="excel-footer-table">
+                <tr style="border: none !important;">
+                    <td style="border: none !important; width: 40%;"></td>
+                    <td style="text-align: center; border: none !important; width: 60%; font-size: 14px; line-height: 1.7; white-space: nowrap;">
+                        <div contenteditable="true" id="khmerDate" class="editable-zone">ថ្ងៃអាទិត្យ ៧កើត ខែបឋមាសាឍ ឆ្នាំខាល ចត្វាស័ក ព.ស. ២៥៧០</div>
+                        <div contenteditable="true" id="solarDate" class="editable-zone">ស្រុកជលគិរី, ថ្ងៃទី២១ ខែមិថុនា ឆ្នាំ២០២៦</div>
+                        <div contenteditable="true" id="signatureTitle" class="editable-zone font-bold mt-1">អ្នកធ្វើតារាង</div>
+                        <br><br>
+                        <div contenteditable="true" id="signerName" class="editable-zone font-bold text-base">សូមបំពេញឈ្មោះ</div>
+                    </td>
+                </tr>
+            </table>
+        </div>
     </div>
 
     <script>
-
-// --- យន្តការគ្រប់គ្រង SPLASH SCREEN (៥ វិនាទី) ---
         let timeLeft = 5;
         const countdownEl = document.getElementById('countdown');
         
@@ -281,21 +257,17 @@
                 const splash = document.getElementById('splash-screen');
                 const mainContent = document.getElementById('main-content');
                 
-                // ធ្វើឱ្យ Splash Screen រលាយបាត់ (Fade Out)
                 splash.style.opacity = '0';
                 
                 setTimeout(() => {
-                    splash.style.display = 'none'; // បិទវាចោលតែម្តង
-                    
-                    // បង្ហាញផ្ទាំងកម្មវិធីធំមកវិញ (Fade In)
+                    splash.style.display = 'none';
                     mainContent.classList.remove('opacity-0');
                     mainContent.classList.add('opacity-100');
                     mainContent.classList.remove('pointer-events-none');
-                }, 1000); // រង់ចាំការធ្វើ Fade duration ១វិនាទីសិន
+                }, 1000);
             }
         }, 1000);
 
-        // ទិន្នន័យគំរូដំបូងសម្រាប់ខែមិថុនា
         const defaultJuneData = [
             { name: "មន សុភ័ក្ត្រ", gender: "ប្រុស", grade: "99B", mistake: "លេងទូរស័ព្ទ", count: 1, action: "អប់រំ", date: "12.មិថុនា.2026", other: "" },
             { name: "អឿន កែវឆាយ", gender: "ប្រុស", grade: "99A", mistake: "លេងទូរស័ព្ទ", count: 1, action: "អប់រំ", date: "12.មិថុនា.2026", other: "" },
@@ -305,7 +277,6 @@
         let currentMonth = "មិថុនា";
         let students = [];
 
-        // មុខងារផ្ទុកទិន្នន័យតាមខែដែលបានជ្រើសរើស
         function loadMonthData() {
             currentMonth = document.getElementById('monthSelector').value;
             document.getElementById('currentMonthTitle').innerText = "ប្រចាំខែ" + currentMonth;
@@ -315,7 +286,6 @@
             if (storedData) {
                 students = JSON.parse(storedData);
             } else {
-                // ប្រសិនបើជាខែមិថុនា ឱ្យទាញទិន្នន័យគំរូ បើខែផ្សេងទៀតឱ្យទទេស្អាតសិន
                 students = (currentMonth === "មិថុនា") ? defaultJuneData : [];
             }
             renderTable();
@@ -356,7 +326,6 @@
                 tbody.appendChild(tr);
             });
 
-            // រក្សាទុកដាច់ដោយឡែកតាម Key នៃខែនីមួយៗ
             localStorage.setItem('studentData_month_' + currentMonth, JSON.stringify(students));
         }
 
@@ -452,6 +421,56 @@
             document.body.removeChild(a);
         }
 
+        // --- មុខងារថ្មី៖ នាំចេញទៅ Microsoft Word (.doc) ---
+        function exportToWord() {
+            let printArea = document.getElementById('printArea').cloneNode(true);
+            let noPrintElements = printArea.querySelectorAll('.no-print');
+            noPrintElements.forEach(el => el.remove());
+
+            // ចម្លងតម្លៃអត្ថបទចេញពី Editable zones
+            printArea.querySelector('#khmerDate').innerText = document.getElementById('khmerDate').innerText;
+            printArea.querySelector('#solarDate').innerText = document.getElementById('solarDate').innerText;
+            printArea.querySelector('#signatureTitle').innerText = document.getElementById('signatureTitle').innerText;
+            printArea.querySelector('#signerName').innerText = document.getElementById('signerName').innerText;
+
+            // កំណត់ Style សម្រាប់កម្មវិធី Word ឱ្យស្គាល់ Font ខ្មែរបានច្បាស់លាស់
+            let wordStyle = `
+                <style>
+                    body, table, td, th { font-family: 'Khmer OS Battambang', 'Khmer', sans-serif; font-size: 11pt; color: black; }
+                    table { border-collapse: collapse; width: 100%; }
+                    th, td { border: 1px solid #000000 !important; padding: 6px; vertical-align: middle; }
+                    thead tr { background-color: #f2f2f2 !important; font-weight: bold; }
+                    .excel-header-table td, .excel-footer-table td { border: none !important; font-size: 11pt; }
+                    .font-moul { font-family: 'Khmer OS Muol Light', 'Moul', serif; font-weight: bold; text-align: center; }
+                    .text-center { text-align: center; }
+                    .my-6 { margin-top: 20px; margin-bottom: 20px; }
+                </style>
+            `;
+
+            // បង្កើត HTML Template សម្រាប់ទម្រង់ឯកសារ Word (w:word)
+            let wordTemplate = `
+                <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="UTF-8">
+                    ${wordStyle}
+                </head>
+                <body>
+                    <div>${printArea.innerHTML}</div>
+                </body>
+                </html>
+            `;
+
+            // ទាញយកជាហ្វាល់ .doc
+            let blob = new Blob(['\ufeff' + wordTemplate], { type: 'application/msword;charset=utf-8;' });
+            let url = URL.createObjectURL(blob);
+            let a = document.createElement('a');
+            a.href = url;
+            a.download = 'បញ្ជីឈ្មោះសិស្សប្រព្រឹត្តខុសវិន័យ_ខែ' + currentMonth + '.doc';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
         function exportBackup() {
             let allData = {};
             const months = ["មករា", "កុម្ភៈ", "មីនា", "មេសា", "ឧសភា", "មិថុនា", "កក្កដា", "សីហា", "កញ្ញា", "តុលា", "វិច្ឆិកា", "ធ្នូ"];
@@ -491,7 +510,6 @@
             reader.readAsText(input.files[0]);
         }
 
-        // ចាប់ផ្តើមផ្ទុកទិន្នន័យដំបូង
         loadMonthData();
     </script>
 </body>
