@@ -57,7 +57,7 @@
                     <label class="block text-white/90 text-sm mb-2 font-medium">លេខសម្ងាត់</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-white/50">🔒</span>
-                        <input type="password" id="loginPassword" class="w-full bg-black/20 border border-white/20 rounded-xl pl-10 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-[#179BB5] focus:bg-black/40 focus:ring-1 focus:ring-[#179BB5] transition-all" required placeholder="វាយបញ្ចូល 12345">
+                        <input type="password" id="loginPassword" class="w-full bg-black/20 border border-white/20 rounded-xl pl-10 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-[#179BB5] focus:bg-black/40 focus:ring-1 focus:ring-[#179BB5] transition-all" required placeholder="វាយបញ្ចូល 2026">
                     </div>
                 </div>
                 
@@ -161,15 +161,32 @@
         const logoutBtn = document.getElementById('logoutBtn');
         let timerInterval;
 
+        // មុខងារពិនិត្យមើលស្ថានភាព Login ពេលទំព័រត្រូវបានលោតមកដំបូង (ឬពេល Refresh)
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (isLoggedIn === 'true') {
+                loginScreen.classList.add('hidden');
+                loginScreen.classList.add('opacity-0');
+                mainDashboard.classList.remove('hidden');
+                mainDashboard.classList.remove('opacity-0');
+                startTimer();
+            }
+        }
+        
+        // ហៅមុខងារឆែកមើលភ្លាមៗពេលកូដដើរ
+        checkLoginStatus();
+
         loginForm.addEventListener('submit', function(e) {
             e.preventDefault();
             
             const user = document.getElementById('loginUsername').value;
             const pass = document.getElementById('loginPassword').value;
 
-            // ឆែកមើល User និង Password (អ្នកអាចប្តូរតាមចិត្តបាននៅទីនេះ)
+            // ឆែកមើល User និង Password
             if (user === 'admin' && pass === '2026') {
-                // បិទផ្ទាំង Login និងបង្ហាញផ្ទាំង Main 
+                // រក្សាទុកស្ថានភាពចូលប្រព័ន្ធក្នុង localStorage ដើម្បីកុំឱ្យបាត់ពេល Refresh
+                localStorage.setItem('isLoggedIn', 'true');
+
                 loginError.classList.add('hidden');
                 loginScreen.classList.add('opacity-0');
                 
@@ -185,7 +202,6 @@
             } else {
                 // បង្ហាញសារកំហុសបើវាយខុស
                 loginError.classList.remove('hidden');
-                // ធ្វើចលនាញ័រ (Shake effect) បន្តិចបន្តួច
                 loginScreen.querySelector('.bg-white\\/10').classList.add('animate-pulse');
                 setTimeout(() => loginScreen.querySelector('.bg-white\\/10').classList.remove('animate-pulse'), 500);
             }
@@ -193,6 +209,9 @@
 
         // មុខងារចាកចេញ (Logout)
         logoutBtn.addEventListener('click', function() {
+            // លុបទិន្នន័យ Login ចេញពី localStorage វិញ
+            localStorage.removeItem('isLoggedIn');
+
             mainDashboard.classList.add('opacity-0');
             setTimeout(() => {
                 mainDashboard.classList.add('hidden');
@@ -209,7 +228,7 @@
             }, 500);
         });
 
-        // --- ផ្នែក Timer Logic (កែសម្រួលដើម្បីបញ្ជាពេល Login) ---
+        // --- ផ្នែក Timer Logic ---
         let totalSeconds = 0;
         const timeDisplay = document.getElementById('timeDisplay');
         const resetBtn = document.getElementById('resetTimerBtn');
