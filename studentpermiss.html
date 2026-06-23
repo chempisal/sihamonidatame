@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>លិខិតសុំច្បាប់ - ប្រព័ន្ធគ្រប់គ្រង</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Moul&display=swap" rel="stylesheet">
+    <style>
+        /* ការកំណត់ទូទៅ */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Battambang', sans-serif;
+            background-color: #f4f6f9;
+            padding: 30px 20px;
+            margin: 0;
+            color: #2c3e50;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* របារបញ្ជា (Control Panel) ផ្នែកខាងលើ */
+        .control-panel {
+            max-width: 800px;
+            margin: 0 auto 25px auto;
+            background: #ffffff;
+            padding: 15px 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        /* រចនាបថប៊ូតុងទូទៅ */
+        .btn {
+            font-family: 'Battambang', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px; 
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s ease-in-out;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px); 
+            box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+        }
+        
+        .btn:active { transform: translateY(0); }
+
+        /* ពណ៌ប៊ូតុងនីមួយៗ (Gradient Colors) */
+        .btn-home { background: linear-gradient(135deg, #11998e, #38ef7d); }
+        .btn-print { background: linear-gradient(135deg, #007bff, #00c6ff); }
+        .btn-word { background: linear-gradient(135deg, #1f4068, #162447); }
+        .btn-download { background: linear-gradient(135deg, #8e2de2, #4a00e0); }
+        .btn-upload { background: linear-gradient(135deg, #f12711, #f5af19); }
+
+        /* ទម្រង់ទំព័រលិខិត */
+        .page-container {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20mm 25mm 25mm 25mm; /* កំណត់ Margin តាមស្តង់ដារលិខិតរដ្ឋបាល */
+            box-shadow: 0 4px 30px rgba(0,0,0,0.05);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* សញ្ញាសម្គាល់កន្លែងដែលអាចចុចកែអក្សរបាន */
+        [contenteditable="true"]:hover {
+            background-color: rgba(0, 123, 255, 0.03);
+            outline: 1px dashed #007bff;
+            border-radius: 4px;
+        }
+        [contenteditable="true"]:focus {
+            background-color: rgba(0, 123, 255, 0.06);
+            outline: 1px solid #007bff;
+            border-radius: 4px;
+        }
+
+        /* ផ្នែកក្បាលលិខិត */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+        }
+        .header-left {
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        .header-right {
+            text-align: center;
+            line-height: 1.6;
+        }
+        .motto { font-family: 'Moul', cursive; font-size: 15px; margin-bottom: 2px; }
+        .nation-religion { font-family: 'Moul', cursive; font-size: 13px; }
+        .decoration-line { font-size: 14px; margin-top: -5px; color: #555; }
+        
+        /* ចំណងជើង */
+        .title {
+            text-align: center;
+            font-family: 'Moul', cursive;
+            font-size: 22px;
+            margin: 25px 0 35px 0;
+            text-decoration: underline;
+            text-underline-offset: 6px;
+        }
+        
+        /* តួសេចក្តី */
+        .content { line-height: 2.2; font-size: 15px; text-align: justify; }
+        .inline-edit {
+            display: inline-block;
+            min-width: 50px;
+            border-bottom: 1.5px dotted #007bff;
+            text-align: center;
+            padding: 0 5px;
+            color: #0056b3;
+            font-weight: bold;
+        }
+        .w-full-edit {
+            display: block;
+            width: 100%;
+            border-bottom: 1.5px dotted #007bff;
+            margin-top: 5px;
+            min-height: 28px;
+            color: #0056b3;
+        }
+        
+        .flex-row { display: flex; align-items: flex-start; margin-top: 10px; }
+        .flex-label { font-family: 'Moul', cursive; font-size: 14px; white-space: nowrap; margin-right: 10px; }
+        
+        .center-block { text-align: center; margin: 20px 0; }
+        .indent-text { text-indent: 10px; }
+        .bold { font-weight: bold; }
+        
+        /* តំបន់ហត្ថលេខា */
+        .signatures-container {
+            position: relative;
+            margin-top: 30px;
+            min-height: 320px; /* កាត់បន្ថយពី 420px ដើម្បីកុំឱ្យហៀរទំព័រ */
+            border-top: 1px dashed #e2e8f0;
+            padding-top: 15px;
+        }
+        
+        /* ប្រអប់ហត្ថលេខា */
+        .draggable-box {
+            position: absolute;
+            width: 310px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.98);
+            border: 1px dashed #007bff;
+            border-radius: 8px;
+            resize: horizontal; 
+            overflow: auto;     
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+        
+        /* របារសម្រាប់ចុចទាញ */
+        .drag-handle {
+            background: #007bff;
+            color: white;
+            text-align: center;
+            font-size: 11px;
+            padding: 4px 0;
+            margin-bottom: 6px;
+            cursor: move;
+            border-radius: 4px;
+            user-select: none;
+        }
+
+        /* ទីតាំងលំនាំដើមដែលបានបង្កើនភាពបង្រួម */
+        #box-teacher { top: 15px; left: 0px; }
+        #box-student { top: 15px; right: 0px; }
+        #box-director { top: 165px; left: 220px; }
+
+        /* លក្ខខណ្ឌពិសេសសម្រាប់ការបោះពុម្ភ (Print) */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0; /* ការពារ browser margin កុំឱ្យជាន់គ្នា */
+            }
+            
+            body { 
+                background-color: #fff; 
+                padding: 0; 
+                margin: 0;
+            }
+            
+            .control-panel { 
+                display: none !important; 
+            }
+            
+            .page-container { 
+                box-shadow: none; 
+                padding: 20mm 20mm 20mm 20mm; /* រក្សារចនាសម្ព័ន្ធ A4 ឱ្យនៅតែ ១ ផេកគត់ */
+                margin: 0; 
+                width: 210mm;
+                height: 297mm;
+                max-height: 297mm;
+                border-radius: 0;
+                page-break-inside: avoid;
+                page-break-after: avoid;
+            }
+            
+            .draggable-box { 
+                border: none !important; 
+                background: transparent; 
+                overflow: visible; 
+                box-shadow: none; 
+            }
+            
+            .drag-handle { 
+                display: none !important; 
+            }
+            
+            .signatures-container { 
+                border-top: none; 
+                min-height: auto;
+                page-break-inside: avoid;
+            }
+            
+            .inline-edit, .w-full-edit { 
+                color: #000; 
+                border-bottom: 1px dotted #000 !important;
+            }
+            
+            [contenteditable="true"]:hover, [contenteditable="true"]:focus { 
+                background-color: transparent; 
+                outline: none; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="control-panel">
+    <button class="btn btn-home" onclick="goToHome()">🏠 ទំព័រដើម</button>
+    <button class="btn btn-download" onclick="downloadTemplate()">📥 ទាញយកពុម្ពគំរូ (Template)</button>
+    <button class="btn btn-upload" onclick="triggerUpload()">📤 ផ្ទុកពុម្ពគំរូចូល</button>
+    <button class="btn btn-print" onclick="window.print()">🖨️ បោះពុម្ភលិខិត (PDF)</button>
+    <button class="btn btn-word" onclick="exportToWord()">📝 នាំចេញជា Word</button>
+    
+    <input type="file" id="templateFileInput" accept=".json" style="display: none;" onchange="loadTemplate(event)">
+</div>
+
+<div class="page-container" id="document-page">
+    
+    <div class="header">
+        <div class="header-left" contenteditable="true">
+            ការិយាល័យ នៃរដ្ឋបាលស្រុកជលគិរី<br>
+            វិទ្យាល័យ ព្រះនរោត្តម សីហមុនី
+        </div>
+        <div class="header-right">
+            <div class="motto" contenteditable="true">ព្រះរាជាណាចក្រកម្ពុជា</div>
+            <div class="nation-religion" contenteditable="true">ជាតិ សាសនា ព្រះមហាក្សត្រ</div>
+            <div class="decoration-line" contenteditable="true">✧&#8213;&#8213;&#8213;&#8213;✧&#8213;&#8213;&#8213;&#8213;✧</div>
+        </div>
+    </div>
+
+    <div class="title" contenteditable="true">លិខិតសុំច្បាប់</div>
+
+    <div class="content">
+        <div class="indent-text" contenteditable="true">
+            ខ្ញុំបាទ/នាងខ្ញុំឈ្មោះ <span class="inline-edit" style="min-width: 160px;"></span> ភេទ <span class="inline-edit" style="min-width: 40px;"></span> ជាសិស្សរៀននៅថ្នាក់ទី <span class="inline-edit" style="min-width: 50px;"></span> នៃវិទ្យាល័យ ព្រះនរោត្តម សីហមុនី ស្ថិតក្នុងស្រុកជលគិរី ខេត្តកំពង់ឆ្នាំង ។
+        </div>
+
+        <div class="center-block">
+            <div style="font-family: 'Moul', cursive; font-size: 16px; color: #000080;" contenteditable="true">សូមគោរពជូន</div>
+            <div class="bold" contenteditable="true">សូមគោរពជូនលោកនាយកវិទ្យាល័យ ព្រះនរោត្តម សីហមុនី</div>
+        </div>
+
+        <div class="flex-row">
+            <div class="flex-label" contenteditable="true">តាមរយៈ ៖</div>
+            <div style="flex-grow: 1;" contenteditable="true">
+                - គ្រូប្រចាំថ្នាក់ទី <span class="inline-edit" style="width: 70%;"></span><br>
+                - ប្រធានថ្នាក់ <span class="inline-edit" style="width: 73%;"></span>
+            </div>
+        </div>
+
+        <div class="flex-row">
+            <div class="flex-label" contenteditable="true">កម្មវត្ថុ ៖</div>
+            <div style="flex-grow: 1;" contenteditable="true">
+                សំណើសុំអនុញ្ញាតច្បាប់ចំនួន <span class="inline-edit" style="min-width: 40px;"></span> ថ្ងៃ ចាប់ពីថ្ងៃទី <span class="inline-edit" style="min-width: 35px;"></span> ខែ <span class="inline-edit" style="min-width: 80px;"></span> ឆ្នាំ២០២៦ ដល់ ថ្ងៃទី <span class="inline-edit" style="min-width: 35px;"></span> ខែ <span class="inline-edit" style="min-width: 80px;"></span> ឆ្នាំ២០២៦ ។
+            </div>
+        </div>
+
+        <div class="flex-row">
+            <div class="flex-label" contenteditable="true">មូលហេតុ ៖</div>
+            <div style="flex-grow: 1;">
+                <div class="w-full-edit" contenteditable="true"></div>
+                <div class="w-full-edit" contenteditable="true"></div>
+            </div>
+        </div>
+
+        <div class="indent-text" style="margin-top: 15px;" contenteditable="true">
+            អាស្រ័យដូចបានគោរពជម្រាបជូនតាមកម្មវត្ថុខាងលើ សូមលោកនាយកមេត្តាអនុញ្ញាតច្បាប់ឱ្យខ្ញុំបាទ ដោយក្ដីអនុគ្រោះ ។
+        </div>
+        <div class="indent-text" contenteditable="true">
+            សូមលោកនាយក លោកគ្រូ អ្នកគ្រូទទួលនូវការគោរពពីខ្ញុំបាទ/នាងខ្ញុំ ។
+        </div>
+    </div>
+
+    <div class="signatures-container" id="signatures-area">
+        
+        <div class="draggable-box" id="box-teacher">
+            <div class="drag-handle">☰ ចុចអូសផ្លាស់ទីទីតាំង</div>
+            <div style="text-align: center;" contenteditable="true">
+                ថ្ងៃ <span class="inline-edit" style="min-width:30px;"></span> ខែ <span class="inline-edit" style="min-width:70px;"></span> ឆ្នាំ <span class="inline-edit" style="min-width:70px;"></span> ព.ស ២៥......<br>
+                វិ.ព្រះនរោត្តម សីហមុនី, ថ្ងៃទី <span class="inline-edit" style="min-width:30px;"></span> ខែ <span class="inline-edit" style="min-width:70px;"></span> ឆ្នាំ២០២៦<br>
+                បានឃើញ និងពិនិត្យត្រឹមត្រូវ<br>
+                <div class="bold" style="font-family: 'Moul', cursive; margin-top: 5px;">គ្រូប្រចាំថ្នាក់</div>
+            </div>
+        </div>
+
+        <div class="draggable-box" id="box-student">
+            <div class="drag-handle">☰ ចុចអូសផ្លាស់ទីទីតាំង</div>
+            <div style="text-align: center;" contenteditable="true">
+                ថ្ងៃ <span class="inline-edit" style="min-width:30px;"></span> ខែ <span class="inline-edit" style="min-width:70px;"></span> ឆ្នាំ <span class="inline-edit" style="min-width:70px;"></span> ព.ស ២៥......<br>
+                វិ.ព្រះនរោត្តម សីហមុនី, ថ្ងៃទី <span class="inline-edit" style="min-width:30px;"></span> ខែ <span class="inline-edit" style="min-width:70px;"></span> ឆ្នាំ២០២៦<br>
+                <div class="bold" style="font-family: 'Moul', cursive; margin-top: 25px;">ហត្ថលេខាសាមីខ្លួន</div>
+            </div>
+        </div>
+
+        <div class="draggable-box" id="box-director">
+            <div class="drag-handle">☰ ចុចអូសផ្លាស់ទីទីតាំង</div>
+            <div style="text-align: center;" contenteditable="true">
+                ថ្ងៃ <span class="inline-edit" style="min-width:30px;"></span> ខែ <span class="inline-edit" style="min-width:70px;"></span> ឆ្នាំ <span class="inline-edit" style="min-width:70px;"></span> ព.ស ២៥......<br>
+                វិ.ព្រះនរោត្តម សីហមុនី, ថ្ងៃទី <span class="inline-edit" style="min-width:30px;"></span> ខែ <span class="inline-edit" style="min-width:70px;"></span> ឆ្នាំ២០២៦<br>
+                បានឃើញ និងអនុញ្ញាតច្បាប់ចំនួន <span class="inline-edit" style="min-width:80px;"></span><br>
+                <div class="bold" style="font-family: 'Moul', cursive; margin-top: 5px;">នាយកសាលា</div>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+    // --- មុខងារប៊ូតុងទៅផ្ទះ ---
+    function goToHome() {
+        window.location.href = '#'; 
+        alert('ប្រព័ន្ធកំពង់នាំលោកអ្នកត្រឡប់ទៅកាន់ទំព័រដើមវិញ!');
+    }
+
+    // --- មុខងារទាញផ្លាស់ទី (Drag and Drop) ---
+    function bindDragEvents() {
+        const draggableBoxes = document.querySelectorAll('.draggable-box');
+        draggableBoxes.forEach(box => {
+            const handle = box.querySelector('.drag-handle');
+            if(!handle) return;
+            
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            // លុប Event ចាស់ចេញសិនដើម្បីកុំឱ្យជាន់គ្នាពេល Load Template ឡើងវិញ
+            const newHandle = handle.cloneNode(true);
+            handle.parentNode.replaceChild(newHandle, handle);
+
+            newHandle.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                
+                const rect = box.getBoundingClientRect();
+                const containerRect = box.parentElement.getBoundingClientRect();
+                
+                initialLeft = rect.left - containerRect.left;
+                initialTop = rect.top - containerRect.top;
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            });
+
+            function onMouseMove(e) {
+                if (!isDragging) return;
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                box.style.left = (initialLeft + deltaX) + 'px';
+                box.style.top = (initialTop + deltaY) + 'px';
+                box.style.right = 'auto'; 
+            }
+
+            function onMouseUp() {
+                isDragging = false;
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+        });
+    }
+
+    // ដំណើរការ Drag នៅពេលបើកទំព័រដំបូង
+    window.addEventListener('DOMContentLoaded', bindDragEvents);
+
+    // --- មុខងារទាញយកពុម្ពគំរូ (Download Template) ---
+    function downloadTemplate() {
+        const pageHtml = document.getElementById('document-page').innerHTML;
+        const templateData = { html: pageHtml };
+        
+        const blob = new Blob([JSON.stringify(templateData, null, 2)], { type: 'application/json' });
+        const downloadLink = document.createElement("a");
+        
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = 'លិខិតសុំច្បាប់_ពុម្ពគំរូ.json';
+        
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+
+    // --- មុខងារផ្ទុកពុម្ពគំរូចូល (Upload/Load Template) ---
+    function triggerUpload() {
+        document.getElementById('templateFileInput').click();
+    }
+
+    function loadTemplate(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                if (data.html) {
+                    // ជំនួសខ្លឹមសារទំព័រទាំងមូលជាមួយនឹងទិន្នន័យដែលបានរក្សាទុក
+                    document.getElementById('document-page').innerHTML = data.html;
+                    // ចាំបាច់ត្រូវភ្ជាប់មុខងារ Drag ទៅកាន់ប្រអប់ហត្ថលេខាថ្មីឡើងវិញ
+                    bindDragEvents();
+                    alert('📥 បានផ្ទុកពុម្ពគំរូ (Template) ចូលដោយជោគជ័យ!');
+                } else {
+                    alert('❌ ទម្រង់ឯកសារពុម្ពគំរូមិនត្រឹមត្រូវឡើយ!');
+                }
+            } catch (err) {
+                alert('❌ មានកំហុសក្នុងការអានឯកសារនេះ!');
+            }
+        };
+        reader.readAsText(file);
+        // Reset ដែនតម្លៃ input ដើម្បីអាចរើសឯកសារដដែលម្តងទៀតបាន
+        event.target.value = '';
+    }
+
+    // --- មុខងារនាំចេញឯកសារជា Word Document ---
+    function exportToWord() {
+        const pageContent = document.getElementById('document-page').innerHTML;
+        const tempContainer = document.createElement('div');
+        tempContainer.innerHTML = pageContent;
+        
+        const handles = tempContainer.querySelectorAll('.drag-handle');
+        handles.forEach(h => h.remove());
+
+        const wordStyles = `
+            <style>
+                body { font-family: 'Khmer OS Battambang', 'Arial', sans-serif; line-height: 1.8; }
+                .header { display: table; width: 100%; margin-bottom: 20px; }
+                .title { text-align: center; font-weight: bold; font-size: 20pt; text-decoration: underline; margin: 20px 0; }
+                .content { font-size: 12pt; text-align: justify; }
+                .inline-edit { border-bottom: 1px dotted #000; display: inline-block; min-width: 50px; text-align: center; }
+                .bold { font-weight: bold; }
+                .signatures-container { margin-top: 40px; display: block; }
+                .draggable-box { margin-bottom: 20px; padding: 10px; border: none; }
+            </style>
+        `;
+
+        const fullHtml = `
+            <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>លិខិតសុំច្បាប់</title>${wordStyles}</head>
+            <body>${tempContainer.innerHTML}</body>
+            </html>
+        `;
+
+        const blob = new Blob(['\ufeff' + fullHtml], { type: 'application/msword;charset=utf-8' });
+        const downloadLink = document.createElement("a");
+        downloadLink.href = URL.createObjectURL(blob);
+        downloadLink.download = 'លិខិតសុំច្បាប់.doc';
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+    }
+</script>
+
+</body>
+</html>
