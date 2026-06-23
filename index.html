@@ -29,6 +29,8 @@
 </head>
 <body class="bg-slate-50 select-none overflow-x-hidden">
 
+    <input type="file" id="logoInput" accept="image/*" class="hidden">
+
     <div id="loginScreen" class="fixed inset-0 z-[100] flex items-center justify-center bg-cover bg-center transition-opacity duration-500" 
          style="background-image: linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?q=80&w=1920');">
         
@@ -38,7 +40,7 @@
             <div class="absolute -bottom-16 -left-16 w-40 h-40 bg-gradient-to-tr from-[#C48B58] to-amber-500 rounded-full blur-3xl opacity-30 pointer-events-none"></div>
 
             <div class="text-center mb-8 relative z-10">
-                <div class="w-20 h-20 mx-auto bg-[#C48B58] rounded-full border-[3px] border-white/30 flex items-center justify-center overflow-hidden shadow-xl mb-4">
+                <div id="loginLogoContainer" class="w-20 h-20 mx-auto bg-[#C48B58] rounded-full border-[3px] border-white/30 flex items-center justify-center overflow-hidden shadow-xl mb-4 cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300" title="ចុចដើម្បីប្តូរ Logo">
                     <span class="text-sm text-white font-bold">LOGO</span>
                 </div>
                 <h2 class="khmer-moul text-3xl text-white tracking-wider drop-shadow-md">ចូលគណនី</h2>
@@ -58,7 +60,7 @@
                     <label class="block text-white/90 text-sm mb-2 font-medium">លេខសម្ងាត់</label>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-white/50">🔒</span>
-                        <input type="password" id="loginPassword" class="w-full bg-black/20 border border-white/20 rounded-xl pl-10 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-[#179BB5] focus:bg-black/40 focus:ring-1 focus:ring-[#179BB5] transition-all" required placeholder="វាយបញ្ចូល 2026">
+                        <input type="password" id="loginPassword" class="w-full bg-black/20 border border-white/20 rounded-xl pl-10 pr-4 py-3.5 text-white placeholder-white/30 focus:outline-none focus:border-[#179BB5] focus:bg-black/40 focus:ring-1 focus:ring-[#179BB5] transition-all" required placeholder="វាយបញ្ចូល">
                     </div>
                 </div>
                 
@@ -76,7 +78,7 @@
     <div id="mainDashboard" class="hidden opacity-0 transition-opacity duration-700">
         <header class="bg-gradient-to-r from-[#179BB5] to-[#127d92] text-white py-5 px-8 flex items-center justify-between shadow-lg">
             <div class="flex items-center gap-5">
-                <div class="w-16 h-16 bg-[#C48B58] rounded-full border-2 border-white/50 flex items-center justify-center overflow-hidden shadow-inner">
+                <div id="dashboardLogoContainer" class="w-16 h-16 bg-[#C48B58] rounded-full border-2 border-white/50 flex items-center justify-center overflow-hidden shadow-inner cursor-pointer hover:scale-105 active:scale-95 transition-all duration-300" title="ចុចដើម្បីប្តូរ Logo">
                     <span class="text-xs text-center font-bold">LOGO</span>
                 </div>
                 <div>
@@ -211,7 +213,7 @@
         // មុខងារចាកចេញ (Logout)
         logoutBtn.addEventListener('click', function() {
             // លុបទិន្នន័យ Login ចេញពី localStorage វិញ
-            localStorage.removeItem('isLoggedIn');
+            localStorage.setItem('isLoggedIn', 'false'); // កែសម្រួលដើម្បីរក្សាទុកស្ថានភាពចាកចេញ
 
             mainDashboard.classList.add('opacity-0');
             setTimeout(() => {
@@ -291,6 +293,55 @@
         header.addEventListener('touchstart', startDrag, {passive: true});
         document.addEventListener('touchmove', onDrag, {passive: true});
         document.addEventListener('touchend', stopDrag);
+
+
+        // --- 🌟 ផ្នែកបន្ថែមថ្មី៖ គ្រប់គ្រងការ Upload Logo និងរក្សាទុក (Persistence) 🌟 ---
+        const logoInput = document.getElementById('logoInput');
+        const loginLogoContainer = document.getElementById('loginLogoContainer');
+        const dashboardLogoContainer = document.getElementById('dashboardLogoContainer');
+
+        // មុខងារទាញយក Logo ពី localStorage មកបង្ហាញលើ Screen ទាំងពីរ
+        function loadSavedLogo() {
+            const savedLogo = localStorage.getItem('schoolLogo');
+            if (savedLogo) {
+                // បើមានរូបភាព ជំនួសអក្សរ LOGO ដោយរូបភាពវិញ
+                loginLogoContainer.innerHTML = `<img src="${savedLogo}" class="w-full h-full object-cover rounded-full">`;
+                dashboardLogoContainer.innerHTML = `<img src="${savedLogo}" class="w-full h-full object-cover rounded-full">`;
+            } else {
+                // បើគ្មានទេ ឲ្យបង្ហាញអក្សរ LOGO លំនាំដើម
+                loginLogoContainer.innerHTML = `<span class="text-sm text-white font-bold">LOGO</span>`;
+                dashboardLogoContainer.innerHTML = `<span class="text-xs text-center font-bold">LOGO</span>`;
+            }
+        }
+
+        // ហៅអនុវត្តមុខងារបង្ហាញ Logo ភ្លាមៗពេល Load ទំព័រ
+        loadSavedLogo();
+
+        // ពេលចុចលើរង្វង់ Logo ណាមួយ ឲ្យបើកផ្ទាំងរើស File រូបភាព
+        loginLogoContainer.addEventListener('click', () => logoInput.click());
+        dashboardLogoContainer.addEventListener('click', () => logoInput.click());
+
+        // ដំណើរការពេលអ្នកប្រើប្រាស់ជ្រើសរើសរូបភាពរួចរាល់
+        logoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // ការពារកុំឲ្យរើសរូបភាពធំពេក (ព្រោះ localStorage ផ្ទុកបានត្រឹម ~5MB)
+                if (file.size > 2 * 1024 * 1024) { 
+                    alert('រូបភាពធំពេកហើយ! សូមជ្រើសរើសរូបភាពដែលមានទំហំតូចជាង 2MB។');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64String = event.target.result;
+                    // រក្សាទុករូបភាពទៅក្នុង LocalStorage
+                    localStorage.setItem('schoolLogo', base64String);
+                    // បច្ចុប្បន្នភាពរូបភាពភ្លាមៗលើអេក្រង់ទាំងពីរ
+                    loadSavedLogo();
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     </script>
 </body>
 </html>
