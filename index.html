@@ -26,8 +26,6 @@
             transform: translateY(-1px);
         }
     </style>
-   
-
 </head>
 <body class="bg-slate-50 select-none overflow-x-hidden">
 
@@ -47,7 +45,7 @@
                 </div>
                 <h2 class="khmer-moul text-3xl text-white tracking-wider drop-shadow-md">ចូលគណនី</h2>
                 <p class="text-white/70 text-sm mt-2 font-light">ប្រព័ន្ធគ្រប់គ្រងរដ្ឋបាលសាលា</p><br>
-                 <p class="text-white/70 text-sm mt-2 font-light">⭐ អភិវឌ្ឍកម្មវិធីដោយ៖ លោកគ្រូ ចែម ភាសាល បរិញ្ញាបត្រពត៌មានវិទ្យា</p>
+                <p class="text-white/70 text-sm mt-2 font-light">⭐ អភិវឌ្ឍកម្មវិធីដោយ៖ លោកគ្រូ ចែម ភាសាល បរិញ្ញាបត្រពត៌មានវិទ្យា</p>
             </div>
 
             <form id="loginForm" class="relative z-10">
@@ -77,7 +75,7 @@
         </div>
     </div>
 
-<div id="container-32a0a8d334b948e66e535d7d01eaabb6"></div>
+    <div id="container-32a0a8d334b948e66e535d7d01eaabb6"></div>
 
     <div id="mainDashboard" class="hidden opacity-0 transition-opacity duration-700">
         <header class="bg-gradient-to-r from-[#179BB5] to-[#127d92] text-white py-5 px-8 flex items-center justify-between shadow-lg">
@@ -165,7 +163,7 @@
         </div>
     </div>
 
-        
+    <script>
         // --- ផ្នែកគ្រប់គ្រង Login System ---
         const loginForm = document.getElementById('loginForm');
         const loginScreen = document.getElementById('loginScreen');
@@ -305,7 +303,7 @@
         document.addEventListener('touchend', stopDrag);
 
 
-        // --- 🌟 ផ្នែកបន្ថែមថ្មី៖ គ្រប់គ្រងការ Upload Logo និងរក្សាទុក (Persistence) 🌟 ---
+        // --- គ្រប់គ្រងការ Upload Logo និងរក្សាទុក (Persistence) ---
         const logoInput = document.getElementById('logoInput');
         const loginLogoContainer = document.getElementById('loginLogoContainer');
         const dashboardLogoContainer = document.getElementById('dashboardLogoContainer');
@@ -337,7 +335,7 @@
             if (file) {
                 // ការពារកុំឲ្យរើសរូបភាពធំពេក (ព្រោះ localStorage ផ្ទុកបានត្រឹម ~5MB)
                 if (file.size > 2 * 1024 * 1024) { 
-                    alert('រូបភាពធំពេកហើយ! សូមជ្រើសរើសរូបភាពដែលមានទំហំតូចជាង 2MB។');
+                    alert('រូបភាពធំពេកហើយ! សូមជ្រើសរើសរូបភាពដែលមានទំហំតូចជាង 2MB Linn។');
                     return;
                 }
 
@@ -354,5 +352,4 @@
         });
     </script>
 </body>
-   
 </html>
