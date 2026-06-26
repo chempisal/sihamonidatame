@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>តារាងតាមដានទិន្នន័យ ភ្ជាប់ Google Sheets & នាំចូល Excel</title>
+    <title>តារាងតាមដានទិន្នន័យ ជាមួយប៊ូតុងទៅផ្ទះស្អាតៗ</title>
     <link href="https://fonts.googleapis.com/css2?family=Khmer&family=Moul&family=Siemreap&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -11,7 +11,7 @@
     <style>
         body {
             font-family: 'Siemreap', sans-serif;
-            background-color: #f9f9f9;
+            background-color: #f4f6f9;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -19,6 +19,7 @@
             align-items: center;
         }
 
+        /* ធ្វើឱ្យកន្លែងដែលអាចកែអក្សរបាន មានទម្រង់ងាយស្រួលចំណាំ */
         [contenteditable="true"] {
             outline: none;
             padding: 2px;
@@ -30,6 +31,45 @@
         }
         [contenteditable="true"]:focus {
             background-color: #fff9ae;
+        }
+
+        /* របារខាងលើបង្អស់ សម្រាប់ដាក់ប៊ូតុងទៅផ្ទះ */
+        .navigation-bar {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 15px;
+        }
+
+        /* រចនាបថប៊ូតុងទៅផ្ទះ បែបទំនើបនិងទាក់ទាញ */
+        .btn-home {
+            background: linear-gradient(135deg, #0078d4, #005a9e);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-family: 'Siemreap', sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 50px; /* ប៊ូតុងរាងមូលទ្រវែង */
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 120, 212, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        /* ចលនាពេលយកម៉ៅស៍ទៅដាក់ពីលើប៊ូតុងទៅផ្ទះ (Hover Effect) */
+        .btn-home:hover {
+            background: linear-gradient(135deg, #005a9e, #004578);
+            transform: translateY(-3px); /* ហើបឡើងលើបន្តិច */
+            box-shadow: 0 6px 20px rgba(0, 120, 212, 0.4);
+        }
+
+        .btn-home:active {
+            transform: translateY(-1px);
         }
 
         .header-container {
@@ -46,20 +86,21 @@
 
         .form-container {
             background-color: #ffffff;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            padding: 15px;
+            border: 1px solid #e1e4e8;
+            border-radius: 12px;
+            padding: 20px;
             width: 100%;
-            max-width: 970px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-width: 960px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
 
         .form-title {
             font-weight: bold;
+            font-size: 14px;
             margin-top: 0;
-            margin-bottom: 10px;
-            color: #333;
+            margin-bottom: 15px;
+            color: #0078d4;
             border-bottom: 2px solid #0078d4;
             padding-bottom: 5px;
             display: inline-block;
@@ -68,24 +109,28 @@
         .form-inputs {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             align-items: flex-end;
         }
 
         .input-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
 
-        .input-group label { font-size: 12px; font-weight: bold; color: #555; }
+        .input-group label { font-size: 12px; font-weight: bold; color: #4a5568; }
         .input-group input, .input-group select {
             font-family: 'Siemreap', sans-serif;
-            padding: 6px 10px;
+            padding: 8px 12px;
             font-size: 13px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
             outline: none;
+            transition: border-color 0.2s;
+        }
+        .input-group input:focus, .input-group select:focus {
+            border-color: #0078d4;
         }
 
         .top-section {
@@ -99,7 +144,7 @@
             gap: 10px;
         }
 
-        .left-align-text { font-weight: bold; font-size: 15px; }
+        .left-align-text { font-weight: bold; font-size: 15px; color: #2d3748; }
 
         .button-group {
             display: flex;
@@ -108,28 +153,36 @@
             flex-wrap: wrap;
         }
 
+        /* កែរចនាបថប៊ូតុងទាំងអស់ឱ្យកាន់តែស្អាត និងទាក់ទាញ */
         .btn {
             font-family: 'Siemreap', sans-serif;
-            padding: 6px 14px;
+            padding: 8px 16px;
             font-size: 13px;
             border: none;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.2s;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .btn:hover {
+            transform: translateY(-1px);
         }
 
-        .btn-save { background-color: #008080; color: white; }
-        .btn-save:hover { background-color: #005a5a; }
-        .btn-add { background-color: #0078d4; color: white; height: 34px; }
-        .btn-add:hover { background-color: #005a9e; }
+        .btn-save { background-color: #107c41; color: white; } /* ពណ៌បៃតង Excel ងងឹត */
+        .btn-save:hover { background-color: #0b5931; box-shadow: 0 4px 8px rgba(16,124,65,0.3); }
+
+        .btn-add { background-color: #0078d4; color: white; height: 36px; }
+        .btn-add:hover { background-color: #005a9e; box-shadow: 0 4px 8px rgba(0,120,212,0.3); }
+
         .btn-export { background-color: #217346; color: white; }
-        .btn-export:hover { background-color: #1a5c38; }
+        .btn-export:hover { background-color: #1a5c38; box-shadow: 0 4px 8px rgba(33,115,70,0.3); }
+
         .btn-print { background-color: #ff9800; color: white; }
-        .btn-print:hover { background-color: #e68a00; }
+        .btn-print:hover { background-color: #e68a00; box-shadow: 0 4px 8px rgba(255,152,0,0.3); }
         
-        .btn-import-label { background-color: #7a7a7a; color: white; display: inline-block; }
-        .btn-import-label:hover { background-color: #5a5a5a; }
+        .btn-import-label { background-color: #4a5568; color: white; display: inline-block; }
+        .btn-import-label:hover { background-color: #2d3748; box-shadow: 0 4px 8px rgba(74,85,104,0.3); }
         #import-excel { display: none; }
 
         table {
@@ -137,11 +190,12 @@
             width: 100%;
             max-width: 1000px;
             background-color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
         }
 
         th, td {
             border: 2px solid #000000;
-            padding: 6px 4px;
+            padding: 8px 5px;
             text-align: center;
             font-size: 13px;
         }
@@ -156,12 +210,14 @@
         .status-message {
             color: #0078d4;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             display: none;
         }
 
+        /* រៀបចំលាក់ប៊ូតុង និងទម្រង់នានានៅពេលព្រីន */
         @media print {
-            .form-container, .button-group, #import-excel, .status-message { display: none !important; }
+            .navigation-bar, .form-container, .button-group, #import-excel, .status-message { display: none !important; }
+            body { background-color: #ffffff; padding: 0; }
             th { background-color: #fbe59e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             tr:nth-child(even) { background-color: #e2efda !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .highlight-red { color: #ff0000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -169,6 +225,13 @@
     </style>
 </head>
 <body>
+
+    <div class="navigation-bar">
+        <a href="#" class="btn-home">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            ទៅកាន់ទំព័រដើម (Home)
+        </a>
+    </div>
 
     <div class="header-container">
         <p class="header-title-main">ព្រះរាជាណាចក្រកម្ពុជា</p>
@@ -226,24 +289,19 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbysyYe_Y_jDO_DtYmMCl676S5wmfa-pOQ8SYYWbgKOw1d5fUbzBP8RYinXlvha8IpM/exec"; 
         // =================================================
 
-        // ទិន្នន័យគំរូដើម (ករណី Google Sheets មិនទាន់មានទិន្នន័យ)
         const defaultRows = [
             ["1790400099", "ហ៊ឺស", "ហាក់", "ប្រុស", "", "", "", "", "", "", "នាយក"],
             ["2950400127", "ហ៊ុន", "សុខម៉េង", "ស្រី", "✓", "", "", "", "", "", "9B"]
         ];
 
-        // ១. មុខងារទាញទិន្នន័យពី Google Sheets មកបង្ហាញពេលបើក Web លើកដំបូង
         async function loadFromGoogleSheets() {
             const statusText = document.getElementById("status-text");
             statusText.style.display = "block";
-            
             try {
                 const response = await fetch(API_URL);
                 const data = await response.json();
-                
                 const rowsToLoad = (data && data.length > 1) ? data.slice(1) : defaultRows;
                 renderTable(rowsToLoad);
-                
                 statusText.style.display = "none";
             } catch (error) {
                 console.error("Error loading data:", error);
@@ -252,7 +310,6 @@
             }
         }
 
-        // មុខងារសម្រាប់គូរទិន្នន័យចូលទៅក្នុងតារាង HTML
         function renderTable(rows) {
             const tbody = document.getElementById("table-body");
             tbody.innerHTML = "";
@@ -275,7 +332,6 @@
             });
         }
 
-        // ២. មុខងាររក្សាទុកទិន្នន័យទាំងអស់ទៅ Google Sheets
         async function saveToGoogleSheets() {
             const table = document.getElementById("data-table");
             const rows = table.querySelectorAll("tr");
@@ -306,7 +362,6 @@
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(allData)
                 });
-                
                 alert("💾 រក្សាទុកទៅ Google Sheets រួចរាល់ជោគជ័យ!");
                 statusText.style.display = "none";
                 statusText.innerText = "⏳ កំពុងទាញយកទិន្នន័យពី Google Sheets...";
@@ -317,7 +372,6 @@
             }
         }
 
-        // ៣. មុខងារបន្ថែមជួរដេកថ្មីពី Form បញ្ចូលមន្ត្រីថ្មី
         function addNewRow(event) {
             event.preventDefault();
             const id = document.getElementById("new-id").value;
@@ -341,7 +395,6 @@
             document.getElementById("add-member-form").reset();
         }
 
-        // ៤. មុខងារនាំចេញទិន្នន័យជា Excel (Export)
         function exportToExcel() {
             const table = document.getElementById("data-table");
             const rows = table.querySelectorAll("tr");
@@ -361,7 +414,6 @@
             XLSX.writeFile(wb, "តារាងតាមដាន_បច្ចុប្បន្នភាព.xlsx");
         }
 
-        // ៥. មុខងារនាំចូលទិន្នន័យពី Excel (Import Excel)
         document.getElementById('import-excel').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -372,24 +424,20 @@
                 const workbook = XLSX.read(data, {type: 'array'});
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-                
-                // បំប្លែងទិន្នន័យពី Excel ទៅជា Array
                 const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
                 
-                // បើសិនជាមានទិន្នន័យ ឱ្យរំលងជួរទី ០ (ព្រោះវាជាក្បាលតារាង)
                 if(jsonData.length > 1) {
                     const excelRows = jsonData.slice(1);
                     renderTable(excelRows);
-                    alert("📥 នាំចូលទិន្នន័យពី Excel មកលើវេបសាយជោគជ័យ! សូមកុំភ្លេចចុចប៊ូតុង 'រក្សាទុកទៅ Google Sheets' ដើម្បីរក្សាទុកវាចូលក្នុងប្រព័ន្ធ។");
+                    alert("📥 នាំចូលទិន្នន័យពី Excel រួចរាល់! សូមចុចប៊ូតុង 'រក្សាទុកទៅ Google Sheets' ដើម្បីចងចាំទិន្នន័យ។");
                 } else {
                     alert("⚠️ ឯកសារ Excel នេះគ្មានទិន្នន័យសមាជិកទេ។");
                 }
             };
             reader.readAsArrayBuffer(file);
-            this.value = ''; // សម្អាតតម្លៃ input
+            this.value = '';
         });
 
-        // ដំណើរការទាញទិន្នន័យភ្លាមៗពេលបើកទំព័រវេបសាយ
         window.onload = loadFromGoogleSheets;
     </script>
 </body>
