@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>តារាងតាមដានទិន្នន័យ ភ្ជាប់ Google Sheets & នាំចូល Excel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Khmer&family=Moul&family=Siemreap&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Siemreap', sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        [contenteditable="true"] {
+            outline: none;
+            padding: 2px;
+            transition: background 0.2s;
+        }
+        [contenteditable="true"]:hover {
+            background-color: #ffffcc;
+            border-radius: 2px;
+        }
+        [contenteditable="true"]:focus {
+            background-color: #fff9ae;
+        }
+
+        .header-container {
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 1.8;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .header-title-main { font-family: 'Moul', serif; font-size: 16px; margin: 0; }
+        .header-title-sub { font-family: 'Moul', serif; font-size: 14px; margin: 5px 0 15px 0; }
+        .table-title { font-family: 'Moul', serif; font-size: 16px; margin: 10px 0; }
+
+        .form-container {
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            width: 100%;
+            max-width: 970px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .form-title {
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+            border-bottom: 2px solid #0078d4;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+
+        .form-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-group label { font-size: 12px; font-weight: bold; color: #555; }
+        .input-group input, .input-group select {
+            font-family: 'Siemreap', sans-serif;
+            padding: 6px 10px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .top-section {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .left-align-text { font-weight: bold; font-size: 15px; }
+
+        .button-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            font-family: 'Siemreap', sans-serif;
+            padding: 6px 14px;
+            font-size: 13px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+
+        .btn-save { background-color: #008080; color: white; }
+        .btn-save:hover { background-color: #005a5a; }
+        .btn-add { background-color: #0078d4; color: white; height: 34px; }
+        .btn-add:hover { background-color: #005a9e; }
+        .btn-export { background-color: #217346; color: white; }
+        .btn-export:hover { background-color: #1a5c38; }
+        .btn-print { background-color: #ff9800; color: white; }
+        .btn-print:hover { background-color: #e68a00; }
+        
+        .btn-import-label { background-color: #7a7a7a; color: white; display: inline-block; }
+        .btn-import-label:hover { background-color: #5a5a5a; }
+        #import-excel { display: none; }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            max-width: 1000px;
+            background-color: white;
+        }
+
+        th, td {
+            border: 2px solid #000000;
+            padding: 6px 4px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        th { background-color: #fbe59e; font-family: 'Siemreap', sans-serif; font-weight: bold; }
+        tr:nth-child(even) { background-color: #e2efda; }
+        tr:nth-child(odd) { background-color: #ffffff; }
+        .text-left { text-align: left; padding-left: 8px; }
+        .highlight-red { color: #ff0000; font-weight: bold; }
+        input[type="checkbox"] { transform: scale(1.2); cursor: pointer; }
+
+        .status-message {
+            color: #0078d4;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: none;
+        }
+
+        @media print {
+            .form-container, .button-group, #import-excel, .status-message { display: none !important; }
+            th { background-color: #fbe59e !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            tr:nth-child(even) { background-color: #e2efda !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .highlight-red { color: #ff0000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <p class="header-title-main">ព្រះរាជាណាចក្រកម្ពុជា</p>
+        <p class="header-title-sub">ជាតិ សាសនា ព្រះមហាក្សត្រ</p>
+        <div class="table-title">តារាងតាមដានទិន្នន័យសរុបសម្រាប់បញ្ចូលក្នុងប្រព័ន្ធ (GEIP2026)</div>
+    </div>
+
+    <div id="status-text" class="status-message">⏳ កំពុងទាញយកទិន្នន័យពី Google Sheets...</div>
+
+    <div class="form-container">
+        <div class="form-title">➕ បញ្ចូលព័ត៌មានមន្ត្រីថ្មី</div>
+        <form id="add-member-form" onsubmit="addNewRow(event)">
+            <div class="form-inputs">
+                <div class="input-group"><label>អត្តលេខមន្ត្រី</label><input type="text" id="new-id" required></div>
+                <div class="input-group"><label>នាមត្រកូល</label><input type="text" id="new-lastname" required></div>
+                <div class="input-group"><label>នាមខ្លួន</label><input type="text" id="new-firstname" required></div>
+                <div class="input-group">
+                    <label>ភេទ</label>
+                    <select id="new-gender"><option value="ប្រុស">ប្រុស</option><option value="ស្រី">ស្រី</option></select>
+                </div>
+                <div class="input-group"><label>ផ្សេងៗ</label><input type="text" id="new-other"></div>
+                <button type="submit" class="btn btn-add">➕ បន្ថែមសមាជិក</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="top-section">
+        <div class="left-align-text">វិ.ព្រះនរោត្តម សីហមុនី</div>
+        <div class="button-group">
+            <button class="btn btn-save" onclick="saveToGoogleSheets()">💾 រក្សាទុកទៅ Google Sheets</button>
+            <button class="btn btn-print" onclick="window.print()">🖨️ ព្រីនតារាង (Print)</button>
+            
+            <label for="import-excel" class="btn btn-import-label">📥 នាំចូលពី Excel</label>
+            <input type="file" id="import-excel" accept=".xlsx, .xls">
+            
+            <button class="btn btn-export" onclick="exportToExcel()">📤 នាំចេញជា Excel</button>
+        </div>
+    </div>
+
+    <table id="data-table">
+        <thead>
+            <tr>
+                <th>អត្តលេខមន្ត្រី</th><th>នាមត្រកូល</th><th>នាមខ្លួន</th><th>ភេទ</th>
+                <th>មករា</th><th>កុម្ភៈ</th><th>មីនា</th><th>មេសា+ឧសភ</th><th>មិថុនា</th><th>កក្កដា</th>
+                <th>ផ្សេងៗ</th>
+            </tr>
+        </thead>
+        <tbody id="table-body">
+            </tbody>
+    </table>
+
+    <script>
+        // =================================================
+        // ⚠️ សូមប្តូរ URL របស់ Google Web App របស់អ្នកនៅទីនេះ
+        const API_URL = "https://script.google.com/macros/s/AKfycbysyYe_Y_jDO_DtYmMCl676S5wmfa-pOQ8SYYWbgKOw1d5fUbzBP8RYinXlvha8IpM/exec"; 
+        // =================================================
+
+        // ទិន្នន័យគំរូដើម (ករណី Google Sheets មិនទាន់មានទិន្នន័យ)
+        const defaultRows = [
+            ["1790400099", "ហ៊ឺស", "ហាក់", "ប្រុស", "", "", "", "", "", "", "នាយក"],
+            ["2950400127", "ហ៊ុន", "សុខម៉េង", "ស្រី", "✓", "", "", "", "", "", "9B"]
+        ];
+
+        // ១. មុខងារទាញទិន្នន័យពី Google Sheets មកបង្ហាញពេលបើក Web លើកដំបូង
+        async function loadFromGoogleSheets() {
+            const statusText = document.getElementById("status-text");
+            statusText.style.display = "block";
+            
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                const rowsToLoad = (data && data.length > 1) ? data.slice(1) : defaultRows;
+                renderTable(rowsToLoad);
+                
+                statusText.style.display = "none";
+            } catch (error) {
+                console.error("Error loading data:", error);
+                statusText.innerText = "⚠️ មិនអាចទាញទិន្នន័យពី Google Sheets បានទេ! (ប្រើប្រាស់ទិន្នន័យបណ្តោះអាសន្ន)";
+                renderTable(defaultRows);
+            }
+        }
+
+        // មុខងារសម្រាប់គូរទិន្នន័យចូលទៅក្នុងតារាង HTML
+        function renderTable(rows) {
+            const tbody = document.getElementById("table-body");
+            tbody.innerHTML = "";
+            rows.forEach(row => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td contenteditable="true">${row[0] || ''}</td>
+                    <td class="text-left" contenteditable="true">${row[1] || ''}</td>
+                    <td class="text-left" contenteditable="true">${row[2] || ''}</td>
+                    <td contenteditable="true">${row[3] || ''}</td>
+                    <td><input type="checkbox" ${row[4] === "✓" ? "checked" : ""}></td>
+                    <td><input type="checkbox" ${row[5] === "✓" ? "checked" : ""}></td>
+                    <td><input type="checkbox" ${row[6] === "✓" ? "checked" : ""}></td>
+                    <td><input type="checkbox" ${row[7] === "✓" ? "checked" : ""}></td>
+                    <td><input type="checkbox" ${row[8] === "✓" ? "checked" : ""}></td>
+                    <td><input type="checkbox" ${row[9] === "✓" ? "checked" : ""}></td>
+                    <td class="highlight-red" contenteditable="true">${row[10] || ''}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ២. មុខងាររក្សាទុកទិន្នន័យទាំងអស់ទៅ Google Sheets
+        async function saveToGoogleSheets() {
+            const table = document.getElementById("data-table");
+            const rows = table.querySelectorAll("tr");
+            let allData = [];
+
+            rows.forEach((row) => {
+                let rowData = [];
+                const cells = row.querySelectorAll("th, td");
+                cells.forEach((cell) => {
+                    const checkbox = cell.querySelector('input[type="checkbox"]');
+                    if (checkbox) {
+                        rowData.push(checkbox.checked ? "✓" : "");
+                    } else {
+                        rowData.push(cell.innerText.trim());
+                    }
+                });
+                allData.push(rowData);
+            });
+
+            const statusText = document.getElementById("status-text");
+            statusText.innerText = "💾 កំពុងរក្សាទុកទៅ Google Sheets...";
+            statusText.style.display = "block";
+
+            try {
+                await fetch(API_URL, {
+                    method: "POST",
+                    mode: "no-cors",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(allData)
+                });
+                
+                alert("💾 រក្សាទុកទៅ Google Sheets រួចរាល់ជោគជ័យ!");
+                statusText.style.display = "none";
+                statusText.innerText = "⏳ កំពុងទាញយកទិន្នន័យពី Google Sheets...";
+            } catch (error) {
+                console.error("Error saving data:", error);
+                alert("❌ ការរក្សាទុកបរាជ័យ! សូមពិនិត្យមើល API_URL របស់អ្នកឡើងវិញ។");
+                statusText.style.display = "none";
+            }
+        }
+
+        // ៣. មុខងារបន្ថែមជួរដេកថ្មីពី Form បញ្ចូលមន្ត្រីថ្មី
+        function addNewRow(event) {
+            event.preventDefault();
+            const id = document.getElementById("new-id").value;
+            const lastname = document.getElementById("new-lastname").value;
+            const firstname = document.getElementById("new-firstname").value;
+            const gender = document.getElementById("new-gender").value;
+            const other = document.getElementById("new-other").value;
+
+            const tbody = document.getElementById("table-body");
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td contenteditable="true">${id}</td>
+                <td class="text-left" contenteditable="true">${lastname}</td>
+                <td class="text-left" contenteditable="true">${firstname}</td>
+                <td contenteditable="true">${gender}</td>
+                <td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td><td><input type="checkbox"></td>
+                <td class="highlight-red" contenteditable="true">${other}</td>
+            `;
+            tbody.appendChild(tr);
+            document.getElementById("add-member-form").reset();
+        }
+
+        // ៤. មុខងារនាំចេញទិន្នន័យជា Excel (Export)
+        function exportToExcel() {
+            const table = document.getElementById("data-table");
+            const rows = table.querySelectorAll("tr");
+            let csvData = [];
+            rows.forEach((row) => {
+                let rowData = [];
+                const cells = row.querySelectorAll("th, td");
+                cells.forEach((cell) => {
+                    const checkbox = cell.querySelector('input[type="checkbox"]');
+                    rowData.push(checkbox ? (checkbox.checked ? "✓" : "") : cell.innerText.replace(/\n/g, " "));
+                });
+                csvData.push(rowData);
+            });
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(csvData);
+            XLSX.utils.book_append_sheet(wb, ws, "ទិន្នន័យតាមដាន");
+            XLSX.writeFile(wb, "តារាងតាមដាន_បច្ចុប្បន្នភាព.xlsx");
+        }
+
+        // ៥. មុខងារនាំចូលទិន្នន័យពី Excel (Import Excel)
+        document.getElementById('import-excel').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // បំប្លែងទិន្នន័យពី Excel ទៅជា Array
+                const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                
+                // បើសិនជាមានទិន្នន័យ ឱ្យរំលងជួរទី ០ (ព្រោះវាជាក្បាលតារាង)
+                if(jsonData.length > 1) {
+                    const excelRows = jsonData.slice(1);
+                    renderTable(excelRows);
+                    alert("📥 នាំចូលទិន្នន័យពី Excel មកលើវេបសាយជោគជ័យ! សូមកុំភ្លេចចុចប៊ូតុង 'រក្សាទុកទៅ Google Sheets' ដើម្បីរក្សាទុកវាចូលក្នុងប្រព័ន្ធ។");
+                } else {
+                    alert("⚠️ ឯកសារ Excel នេះគ្មានទិន្នន័យសមាជិកទេ។");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+            this.value = ''; // សម្អាតតម្លៃ input
+        });
+
+        // ដំណើរការទាញទិន្នន័យភ្លាមៗពេលបើកទំព័រវេបសាយ
+        window.onload = loadFromGoogleSheets;
+    </script>
+</body>
+</html>
