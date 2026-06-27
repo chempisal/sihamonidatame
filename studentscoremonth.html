@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងសិស្ស ១៦ ថ្នាក់ និងសរុបរួម</title>
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Moul&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <style>
+        /* កំណត់ទម្រង់ទូទៅ */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Khmer OS Battambang', sans-serif;
+            background-color: #f4f4f4;
+        }
+
+        /* រចនាផ្ទាំង Splash Screen */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background-color: #1e3a8a; /* ពណ៌ផ្ទៃខាងក្រោយ */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease; /* ធ្វើឲ្យវារលត់បន្តិចម្តងៗ */
+        }
+
+        #splash-screen h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        #splash-screen p {
+            font-size: 1.2rem;
+            color: #d1d5db;
+        }
+
+        /* រចនាចលនារង្វង់វិល (Loading Spinner) */
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3b82f6;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-top: 30px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* លាក់ទំព័រដើមជាបណ្តោះអាសន្ន */
+        #main-content {
+            display: none;
+            padding: 40px;
+            text-align: center;
+        }
+        body { font-family: 'Battambang', Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f9; }
+        
+        /* ផ្ទាំងបញ្ជា (Control Panel) */
+        .control-panel { max-width: 1100px; margin: 0 auto 20px auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .control-group { display: flex; flex-wrap: wrap; gap: 15px; align-items: center; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #ccc; }
+        .control-group:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Battambang', sans-serif; font-size: 14px; font-weight: bold; color: white; transition: background 0.2s; }
+        .btn-print { background-color: #007bff; } .btn-print:hover { background-color: #0056b3; }
+        .btn-word { background-color: #28a745; } .btn-word:hover { background-color: #1e7e34; }
+        .btn-excel-in { background-color: #17a2b8; } .btn-excel-in:hover { background-color: #117a8b; }
+        .btn-excel-out { background-color: #20c997; } .btn-excel-out:hover { background-color: #1aa179; }
+        .btn-apply { background-color: #ff9800; } .btn-apply:hover { background-color: #e68a00; }
+        .btn-edit { background-color: #ffc107; color: #000; padding: 4px 8px; font-size: 12px; }
+        .btn-delete { background-color: #dc3545; color: #fff; padding: 4px 8px; font-size: 12px; }
+        
+        .form-input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-family: 'Battambang', sans-serif; width: 350px; }
+
+        /* Tabs */
+        .tabs-container { max-width: 1100px; margin: 0 auto 10px auto; display: flex; flex-wrap: wrap; gap: 5px; }
+        .tab-btn { padding: 8px 12px; background-color: #e0e0e0; border: 1px solid #ccc; border-radius: 4px 4px 0 0; cursor: pointer; font-family: 'Battambang', sans-serif; font-size: 13px; font-weight: bold; }
+        .tab-btn.active { background-color: #fff; border-bottom: 2px solid #fff; color: #007bff; box-shadow: 0 -2px 5px rgba(0,0,0,0.05); }
+        .tab-btn.summary-tab { background-color: #ffeb3b; color: #000; }
+        .tab-btn.summary-tab.active { background-color: #fff; color: #d32f2f; border-bottom: 2px solid #fff; }
+
+        /* Document Form */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .document-container { width: 100%; max-width: 1100px; margin: 0 auto; background: #fff; padding: 40px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        
+        .header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .header-left { text-align: center; font-family: 'Moul', serif; font-size: 14px; line-height: 1.6; }
+        .header-center { text-align: center; font-family: 'Moul', serif; font-size: 16px; line-height: 1.6; flex-grow: 1; }
+        .header-center .symbol { font-size: 20px; margin-top: -5px; }
+        .title { text-align: center; font-family: 'Moul', serif; font-size: 16px; margin-bottom: 20px; line-height: 1.8; }
+        
+        table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px; }
+        th, td { border: 1px solid #000; padding: 5px; text-align: center; vertical-align: middle; }
+        th { background-color: #e6e6e6; font-weight: bold; }
+        
+        td[contenteditable="true"] { background-color: #fffde6; outline: 2px solid #ffc107; color: #b30000; font-weight: bold; }
+        td.total-col { background-color: #eef5ff; font-weight: bold; }
+        .grand-total-row td { background-color: #d1e7dd; font-weight: bold; }
+
+        .footer { display: flex; justify-content: space-between; margin-top: 30px; font-size: 14px; }
+        .footer-left, .footer-right { text-align: center; line-height: 1.6; }
+        .signature-space { margin-top: 80px; font-weight: bold; font-family: 'Moul', serif; }
+
+        @media print {
+            .control-panel, .tabs-container, .no-print { display: none !important; }
+            body { padding: 0; background-color: #fff; }
+            .document-container { box-shadow: none; padding: 0; }
+        }
+        /* របារខាងលើបង្អស់ សម្រាប់ដាក់ប៊ូតុងទៅផ្ទះ */
+        .navigation-bar {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 15px;
+        }
+        /* រចនាបថប៊ូតុងទៅផ្ទះ បែបទំនើបនិងទាក់ទាញ */
+        .btn-home {
+            background: linear-gradient(135deg, #0078d4, #005a9e);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            font-family: 'Siemreap', sans-serif;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 50px; /* ប៊ូតុងរាងមូលទ្រវែង */
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 120, 212, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        /* ចលនាពេលយកម៉ៅស៍ទៅដាក់ពីលើប៊ូតុងទៅផ្ទះ (Hover Effect) */
+        .btn-home:hover {
+            background: linear-gradient(135deg, #005a9e, #004578);
+            transform: translateY(-3px); /* ហើបឡើងលើបន្តិច */
+            box-shadow: 0 6px 20px rgba(0, 120, 212, 0.4);
+        }
+
+        .btn-home:active {
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+    
+    <div id="splash-screen">
+        <h1>សូមស្វាគមន៍មកកាន់ប្រព័ន្ធ</h1>
+        <p>បង្កើតដោយ៖ <strong>លោកគ្រូ ចែម ភាសាល បរិញ្ញាបត្រពត៌មានវិទ្យា</strong></p>
+        <div class="loader"></div>
+    </div>
+
+<div class="control-panel">
+    <div class="control-group">
+        <b>ឧបករណ៍៖</b>
+        <button class="btn btn-print" onclick="window.print()">🖨️ ព្រីន</button>
+        <button class="btn btn-word" onclick="exportToWord()">📝 នាំចេញជា Word</button>
+        <button class="btn btn-excel-out" onclick="exportToExcel()">📤 នាំចេញជា Excel</button>
+        <label class="btn btn-excel-in" style="cursor: pointer;">
+            📥 នាំចូលពី Excel <input type="file" id="excelUpload" accept=".xlsx, .xls" style="display: none;" onchange="importExcel(event)">
+        </label>
+        <button class="btn btn-apply" onclick="saveDataToCloud()">☁️ រក្សាទុកទៅ Google Sheet</button>
+<button class="btn btn-excel-in" onclick="loadDataFromCloud()">☁️ ទាញយកពី Google Sheet</button>
+    </div>
+    <div class="navigation-bar">
+        <a href="index.html" class="btn-home">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            ទៅកាន់ទំព័រដើម (Home)
+        </a>
+    </div>
+    <div class="control-group">
+        <b>កំណត់ថ្ងៃខែរួម (បង្ហាញគ្រប់ថ្នាក់)៖</b>
+        <input type="text" id="globalDateLine1" class="form-input" value="ថ្ងៃចន្ទ៨កើត ខែបឋមាសាឍ ឆ្នាំរោង ឆស័ក ពុទ្ធសករាជ២៥៦៨">
+        <input type="text" id="globalDateLine2" class="form-input" value="វិ.ព្រះនរោត្តម សីហមុនី ត្រូវនឹងថ្ងៃទី២២ ខែ មិថុនា ឆ្នាំ២០២៦">
+        <button class="btn btn-apply" onclick="applyGlobalDates()">បញ្ជាក់ថ្ងៃខែ</button>
+    </div>
+</div>
+
+<div class="tabs-container" id="tabsContainer"></div>
+<div id="tabContentsContainer"></div>
+
+<script>
+ // កំណត់រយៈពេល ៥វិនាទី (5000 មីលីវិនាទី)
+        setTimeout(function() {
+            var splashScreen = document.getElementById('splash-screen');
+            var mainContent = document.getElementById('main-content');
+            
+            // ធ្វើឲ្យផ្ទាំង Splash Screen រលត់បន្តិចម្តងៗ
+            splashScreen.style.opacity = '0';
+            
+            // រង់ចាំកន្លះវិនាទីទៀត ដើម្បីឲ្យចលនារលត់ (opacity transition) ដើរចប់ រួចទើបលាក់វាចេញ
+            setTimeout(function() {
+                splashScreen.style.display = 'none';
+                mainContent.style.display = 'block'; // បង្ហាញទំព័រប្រព័ន្ធ
+            }, 500); 
+
+        }, 5000); // លេខ 5000 = ៥ វិនាទី
+
+// កំណត់ API_URL ដែលបានមកពី Google Apps Script 
+const API_URL = "https://script.google.com/macros/s/AKfycbzdE6jdgowdE8GivM1vJw_nEZQFLfYnlpAFcRmlpRSLvmrbJlp8VV6LLi_EeDnxIgp-Ww/exec"; 
+
+// មុខងារប្រមូលទិន្នន័យពីគ្រប់ថ្នាក់ទាំងអស់
+function gatherAllData() {
+    let allData = {};
+    classNames.forEach((className, classIdx) => {
+        let classData = [];
+        let tbody = document.querySelector(`#tab-${classIdx} tbody`);
+        if (tbody) {
+            Array.from(tbody.children).forEach(row => {
+                let rowData = [];
+                // ប្រមូលទិន្នន័យពី Column ទី 0 ដល់ 14 (មិនយកប៊ូតុងកែ)
+                for(let c = 0; c <= 14; c++) {
+                    rowData.push(row.children[c].innerText || "0");
+                }
+                classData.push(rowData);
+            });
+        }
+        allData[className] = classData;
+    });
+    return allData;
+}
+
+// មុខងារបញ្ជូនទិន្នន័យទៅ Google Sheet (POST)
+async function saveDataToCloud() {
+    const data = gatherAllData();
+    const saveBtn = document.querySelector('button[onclick="saveDataToCloud()"]');
+    saveBtn.innerText = "កំពុងរក្សាទុក...";
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
+            // No headers required for Google Apps Script standard CORS handling
+        });
+        
+        const result = await response.json();
+        if(result.status === "success") {
+            alert("ទិន្នន័យត្រូវបានរក្សាទុកទៅ Google Sheet ដោយជោគជ័យ!");
+        } else {
+            alert("មានបញ្ហា: " + result.message);
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert("បរាជ័យក្នុងការតភ្ជាប់ទៅកាន់ Server។");
+    } finally {
+        saveBtn.innerText = "☁️ រក្សាទុកទៅ Google Sheet";
+    }
+}
+
+// មុខងារទាញយកទិន្នន័យពី Google Sheet (GET)
+async function loadDataFromCloud() {
+    const loadBtn = document.querySelector('button[onclick="loadDataFromCloud()"]');
+    loadBtn.innerText = "កំពុងទាញយក...";
+    
+    try {
+        const response = await fetch(API_URL);
+        const cloudData = await response.json();
+        
+        classNames.forEach((className, classIdx) => {
+            if(cloudData[className]) {
+                let tbody = document.querySelector(`#tab-${classIdx} tbody`);
+                let rowsData = cloudData[className];
+                
+                rowsData.forEach((rowData, rIdx) => {
+                    if(tbody.children[rIdx]) {
+                        let tr = tbody.children[rIdx];
+                        // ចាក់ទិន្នន័យចូលតារាងវិញ
+                        for (let col = 1; col <= 14; col++) {
+                            tr.children[col].innerText = rowData[col] || "0";
+                        }
+                    }
+                });
+            }
+        });
+        
+        updateGrandSummaryTable();
+        alert("ទាញយកទិន្នន័យជោគជ័យ!");
+    } catch (error) {
+        console.error('Error:', error);
+        alert("បរាជ័យក្នុងការទាញយកទិន្នន័យ។");
+    } finally {
+        loadBtn.innerText = "☁️ ទាញយកពី Google Sheet";
+    }
+}
+
+    const subjects = [
+        "ភាសាខ្មែរ", "តែងសេចក្តី", "សរសេរតាមអាន", "សីលធម៌-ពលរដ្ឋ", "ប្រវត្តិវិទ្យា", 
+        "ភូមិវិទ្យា", "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", 
+        "ផែនដី", "ភាសាបរទេស", "បច្ចេកវិទ្យា", "បំណិន", "កសិកម្ម", "សេដ្ឋកិច្ច", "អប់រំកាយ-កីឡា"
+    ];
+    const classNames = ["7A", "7B", "7C", "8A", "8B", "8C", "9A", "9B", "10A", "10B", "10C", "11A", "11B", "11C", "12A", "12B", "8L", "8M"];
+
+    const tabsContainer = document.getElementById('tabsContainer');
+    const contentsContainer = document.getElementById('tabContentsContainer');
+
+    function init() {
+        // បង្កើត 16 ថ្នាក់
+        classNames.forEach((className, index) => {
+            createTabButton(`ថ្នាក់ ${className}`, index);
+            createTabContent(className, index, false);
+        });
+        
+        // បង្កើតថេប សរុបគ្រប់ថ្នាក់ (Tab ទី 17)
+        let summaryIndex = classNames.length;
+        createTabButton("📊 សរុបគ្រប់ថ្នាក់", summaryIndex, true);
+        createTabContent("សរុបរួមទាំងអស់", summaryIndex, true);
+
+        // បើកថេបទី 1 ជាលំនាំដើម
+        switchTab(0);
+        applyGlobalDates();
+    }
+
+    function createTabButton(title, index, isSummary = false) {
+        let btn = document.createElement('button');
+        btn.className = `tab-btn ${isSummary ? 'summary-tab' : ''}`;
+        btn.innerText = title;
+        btn.onclick = () => switchTab(index);
+        tabsContainer.appendChild(btn);
+    }
+
+    function createTabContent(className, index, isSummary) {
+        let contentDiv = document.createElement('div');
+        contentDiv.className = 'tab-content';
+        contentDiv.id = `tab-${index}`;
+        
+        let rowsHtml = '';
+        subjects.forEach(sub => {
+            rowsHtml += `
+                <tr>
+                    <td>${sub}</td>
+                    <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+                    <td>0</td><td>0</td><td>0</td><td>0</td><td>0</td><td>0</td>
+                    <td class="total-col">0</td><td class="total-col">0</td>
+                    ${isSummary ? '' : `<td class="no-print"><button class="btn btn-edit" onclick="toggleEdit(this)">កែ</button></td>`}
+                </tr>`;
+        });
+
+        contentDiv.innerHTML = `
+            <div class="document-container">
+                <div class="header">
+                    <div class="header-left">
+                        មន្ទីរអប់រំ យុវជន និងកីឡាខេត្តកំពង់ឆ្នាំង<br>
+                        ការិយាល័យ អប់រំ យុវជន និងកីឡាស្រុកជលគិរី<br>
+                        វិទ្យាល័យ ព្រះនរោត្តម សីហមុនី
+                    </div>
+                    <div class="header-center">
+                        ព្រះរាជាណាចក្រកម្ពុជា<br>
+                        <span class="motto">ជាតិ សាសនា ព្រះមហាក្សត្រ</span><br>
+                        <div class="symbol">❧ ❧ ❧</div>
+                    </div>
+                    <div style="width: 250px;" class="no-print"></div>
+                </div>
+
+                <div class="title">
+                    <span contenteditable="true">ចំនួនសិស្សតាមនិទ្ទេសនៃមុខវិជ្ជានីមួយៗ ប្រចាំខែមិថុនា</span><br>
+                    <span contenteditable="true">ថ្នាក់ទី ${className} ឆ្នាំសិក្សា: ២០២៥-២០២៦</span>
+                </div>
+
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th rowspan="2">មុខវិជ្ជា</th>
+                            <th colspan="2">និទ្ទេស A</th><th colspan="2">និទ្ទេស B</th>
+                            <th colspan="2">និទ្ទេស C</th><th colspan="2">និទ្ទេស D</th>
+                            <th colspan="2">និទ្ទេស E</th><th colspan="2">និទ្ទេស F</th>
+                            <th colspan="2">សរុបរួម</th>
+                            ${isSummary ? '' : '<th rowspan="2" class="no-print" style="width: 50px;">សកម្មភាព</th>'}
+                        </tr>
+                        <tr>
+                            <th>សរុប</th><th>ស្រី</th><th>សរុប</th><th>ស្រី</th>
+                            <th>សរុប</th><th>ស្រី</th><th>សរុប</th><th>ស្រី</th>
+                            <th>សរុប</th><th>ស្រី</th><th>សរុប</th><th>ស្រី</th>
+                            <th>សរុប</th><th>ស្រី</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                    <tfoot>
+                        <tr class="grand-total-row">
+                            <td>សរុបរួម</td>
+                            <td class="col-sum">0</td><td class="col-sum">0</td><td class="col-sum">0</td><td class="col-sum">0</td>
+                            <td class="col-sum">0</td><td class="col-sum">0</td><td class="col-sum">0</td><td class="col-sum">0</td>
+                            <td class="col-sum">0</td><td class="col-sum">0</td><td class="col-sum">0</td><td class="col-sum">0</td>
+                            <td class="col-sum">0</td><td class="col-sum">0</td>
+                            ${isSummary ? '' : '<td class="no-print"></td>'}
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="footer">
+                    <div class="footer-left">
+                        <span class="global-date-1"></span><br>
+                        <span class="global-date-2"></span><br>
+                        <b>នាយកសាលា</b>
+                        <div class="signature-space"></div>
+                    </div>
+                    <div class="footer-right">
+                        <span class="global-date-1"></span><br>
+                        <span class="global-date-2"></span><br>
+                        ${isSummary ? 'គណៈគ្រប់គ្រង' : `គ្រូទទួលបន្ទុកថ្នាក់ទី ${className}`}</b>
+                        <br>
+                        <b>ហត្ថលេខា</b>
+                    </div>
+                </div>
+            </div>`;
+        
+        contentsContainer.appendChild(contentDiv);
+
+        if (!isSummary) {
+            attachAutoCalculate(contentDiv.querySelector('table'));
+        }
+    }
+
+    function switchTab(activeIndex) {
+        document.querySelectorAll('.tab-btn').forEach((btn, idx) => btn.classList.toggle('active', idx === activeIndex));
+        document.querySelectorAll('.tab-content').forEach((content, idx) => content.classList.toggle('active', idx === activeIndex));
+        
+        if (activeIndex === classNames.length) {
+            updateGrandSummaryTable();
+        }
+    }
+
+    function applyGlobalDates() {
+        let val1 = document.getElementById('globalDateLine1').value;
+        let val2 = document.getElementById('globalDateLine2').value;
+        
+        document.querySelectorAll('.global-date-1').forEach(el => el.innerText = val1);
+        document.querySelectorAll('.global-date-2').forEach(el => el.innerText = val2);
+    }
+
+    function toggleEdit(button) {
+        var row = button.closest('tr');
+        var editableCells = Array.from(row.children).slice(1, 13);
+        var isEditing = row.classList.contains('editing');
+        
+        if (!isEditing) {
+            row.classList.add('editing');
+            button.textContent = 'រក្សាទុក';
+            button.style.backgroundColor = '#28a745';
+            editableCells.forEach(cell => { cell.setAttribute('contenteditable', 'true'); });
+        } else {
+            row.classList.remove('editing');
+            button.textContent = 'កែ';
+            button.style.backgroundColor = '#ffc107';
+            editableCells.forEach(cell => { cell.removeAttribute('contenteditable'); });
+            
+            let event = new Event('input', { bubbles: true });
+            row.children[1].dispatchEvent(event);
+        }
+    }
+
+    function attachAutoCalculate(table) {
+        let tbody = table.querySelector('tbody');
+        tbody.addEventListener('input', function(e) {
+            let cell = e.target;
+            if (cell.tagName === 'TD' && cell.hasAttribute('contenteditable')) {
+                let row = cell.parentElement;
+                let cells = row.children;
+                let totalSrub = 0, totalSrey = 0;
+
+                [1, 3, 5, 7, 9, 11].forEach(idx => { totalSrub += parseInt(cells[idx].innerText) || 0; });
+                [2, 4, 6, 8, 10, 12].forEach(idx => { totalSrey += parseInt(cells[idx].innerText) || 0; });
+
+                cells[13].innerText = totalSrub;
+                cells[14].innerText = totalSrey;
+
+                calculateGrandTotal(table);
+            }
+        });
+    }
+
+    function calculateGrandTotal(table) {
+        let tbody = table.querySelector('tbody');
+        let tfoot = table.querySelector('tfoot');
+        let rows = tbody.querySelectorAll('tr');
+        let grandTotals = Array(14).fill(0);
+
+        rows.forEach(row => {
+            for(let i = 1; i <= 14; i++) {
+                grandTotals[i-1] += parseInt(row.children[i].innerText) || 0;
+            }
+        });
+
+        let tfootCells = tfoot.querySelectorAll('.col-sum');
+        for(let i = 0; i < 14; i++) {
+            tfootCells[i].innerText = grandTotals[i];
+        }
+    }
+
+    function updateGrandSummaryTable() {
+        let summaryTbody = document.querySelector(`#tab-${classNames.length} tbody`);
+        let grandTotalsBottom = Array(14).fill(0);
+
+        subjects.forEach((sub, rIdx) => {
+            let rowTotals = Array(14).fill(0);
+            
+            classNames.forEach((_, classIdx) => {
+                let classRow = document.querySelector(`#tab-${classIdx} tbody`).children[rIdx];
+                for(let c = 1; c <= 14; c++) {
+                    rowTotals[c-1] += parseInt(classRow.children[c].innerText) || 0;
+                }
+            });
+
+            let summaryRow = summaryTbody.children[rIdx];
+            for(let c = 1; c <= 14; c++) {
+                summaryRow.children[c].innerText = rowTotals[c-1];
+                grandTotalsBottom[c-1] += rowTotals[c-1];
+            }
+        });
+
+        let summaryTfootCells = document.querySelector(`#tab-${classNames.length} tfoot`).querySelectorAll('.col-sum');
+        for(let c = 0; c < 14; c++) {
+            summaryTfootCells[c].innerText = grandTotalsBottom[c];
+        }
+    }
+
+    // មុខងារ នាំចូលទិន្នន័យពី Excel
+    function importExcel(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+
+            workbook.SheetNames.forEach(sheetName => {
+                let classIdx = classNames.indexOf(sheetName.trim());
+                if (classIdx !== -1) {
+                    const sheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+                    
+                    let tbody = document.querySelector(`#tab-${classIdx} tbody`);
+                    
+                    jsonData.forEach(row => {
+                        if (row && row.length > 0) {
+                            let subName = String(row[0]).trim();
+                            let subIdx = subjects.indexOf(subName);
+                            
+                            if (subIdx !== -1) {
+                                let tr = tbody.children[subIdx];
+                                for (let col = 1; col <= 12; col++) {
+                                    tr.children[col].innerText = row[col] || "0";
+                                }
+                                
+                                let sumEvent = new Event('input', { bubbles: true });
+                                tr.children[1].setAttribute('contenteditable', 'true');
+                                tr.children[1].dispatchEvent(sumEvent);
+                                tr.children[1].removeAttribute('contenteditable');
+                            }
+                        }
+                    });
+                }
+            });
+
+            updateGrandSummaryTable();
+            alert("នាំចូលទិន្នន័យពី Excel បានជោគជ័យ!");
+            event.target.value = ''; 
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // [ថ្មី] មុខងារ នាំចេញទិន្នន័យទៅជា Excel (គ្រប់ថ្នាក់ និងសរុប)
+    function exportToExcel() {
+        // ធានាថាទិន្នន័យសរុបរួមត្រូវបាន Update មុននឹង Export
+        updateGrandSummaryTable();
+
+        // បង្កើត Workbook ថ្មីមួយ
+        var wb = XLSX.utils.book_new();
+
+        // ដើរទាញយកតារាងពីថេបនីមួយៗ (16 ថ្នាក់ + 1 សរុបរួម)
+        for (let i = 0; i <= classNames.length; i++) {
+            let sheetName = (i < classNames.length) ? classNames[i] : "សរុបរួម";
+            let table = document.querySelector(`#tab-${i} table`);
+            
+            // Clone តារាង ដើម្បីកុំឱ្យប៉ះពាល់ UI ពិតប្រាកដ
+            let cloneTable = table.cloneNode(true);
+            
+            // លុបជួរឈរ "សកម្មភាព" (ប៊ូតុង កែ) ចេញពីឯកសារ Excel
+            cloneTable.querySelectorAll('.no-print').forEach(el => el.remove());
+
+            // បម្លែង HTML តារាងទៅជាសន្លឹកកិច្ចការ Excel
+            let ws = XLSX.utils.table_to_sheet(cloneTable);
+            
+            // បញ្ចូលសន្លឹកកិច្ចការទៅក្នុង Workbook
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+        }
+
+        // ដោនឡូត File Excel
+        XLSX.writeFile(wb, "របាយការណ៍សិស្ស_ទិន្នន័យរួម.xlsx");
+    }
+
+    // មុខងារ នាំចេញ Word (សម្រាប់តែថេបដែលកំពុងមើល)
+    function exportToWord() {
+        var activeTab = document.querySelector('.tab-content.active .document-container');
+        var content = activeTab.cloneNode(true);
+        content.querySelectorAll('.no-print').forEach(el => el.remove());
+
+        var styles = `
+            <style>
+                body { font-family: 'Arial', sans-serif; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { border: 1px solid #000; padding: 5px; text-align: center; }
+                th { background-color: #e6e6e6; }
+                .total-col { background-color: #eef5ff; font-weight: bold; }
+                .grand-total-row td { background-color: #d1e7dd; font-weight: bold; }
+                .header { display: table; width: 100%; margin-bottom: 20px; }
+                .header-left { display: table-cell; width: 40%; text-align: left; font-weight: bold; }
+                .header-center { display: table-cell; width: 60%; text-align: center; font-weight: bold; }
+                .title { text-align: center; font-weight: bold; margin: 20px 0; font-size: 16px; }
+                .footer { display: table; width: 100%; margin-top: 50px; }
+                .footer-left { display: table-cell; width: 50%; text-align: center; }
+                .footer-right { display: table-cell; width: 50%; text-align: center; }
+            </style>
+        `;
+
+        var html = window.navigator.userAgent.indexOf("MSIE ") > 0 ? content.innerHTML : new XMLSerializer().serializeToString(content);
+        var fullHtml = "<html><head><meta charset='utf-8'>" + styles + "</head><body>" + html + "</body></html>";
+
+        var blob = new Blob(['\ufeff' + fullHtml], { type: 'application/msword' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        
+        let activeClassName = document.querySelector('.tab-btn.active').innerText.replace('ថ្នាក់ ', '').replace('📊 ', '');
+        a.download = `របាយការណ៍សិស្ស_${activeClassName}.doc`;
+        
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+
+    // ចាប់ផ្តើមប្រព័ន្ធ
+    init();
+</script>
+
+</body>
+</html>
