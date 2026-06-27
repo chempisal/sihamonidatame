@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>លិខិតអបអរសាទរ (ប្រព័ន្ធព្រីនច្រើនទំព័រ និងលុប/កែទិន្នន័យ)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Moul&family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; background-color: #2c3e50; font-family: 'Battambang', sans-serif; }
+        
+        .controls { background-color: #fff; padding: 15px 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; max-width: 1200px; align-items: center; }
+        .controls button { font-family: 'Battambang', sans-serif; background-color: #007bff; color: white; border: none; padding: 8px 15px; font-size: 14px; border-radius: 5px; cursor: pointer; transition: 0.3s; }
+        .controls button:hover { background-color: #0056b3; }
+        .controls button.print-btn { background-color: #28a745; }
+        .controls button.print-btn:hover { background-color: #1e7e34; }
+        .controls button.excel-btn { background-color: #f39c12; }
+        .controls button.excel-btn:hover { background-color: #d68910; }
+        .controls button.word-btn { background-color: #9b59b6; }
+        .controls button.word-btn:hover { background-color: #8e44ad; }
+        .controls button.gsheet-btn { background-color: #0f9d58; font-weight: bold; }
+        .controls button.gsheet-btn:hover { background-color: #0b7a44; }
+        .controls button.sync-btn { background-color: #4285f4; font-weight: bold; }
+        
+        /* ពណ៌ប៊ូតុង លុប កែតម្រូវ និង ព្រីនទាំងអស់ */
+/* រចនាប័ទ្មប៊ូតុង Home ឱ្យមានភាពទាក់ទាញ */
+.controls button.home-btn { 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+    color: white; 
+    font-weight: bold; 
+    border-radius: 8px; 
+    padding: 8px 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.controls button.home-btn:hover { 
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    transform: translateY(-2px); /* ធ្វើឱ្យប៊ូតុងលោតឡើងលើបន្តិចពេលដាក់ Mouse ពីលើ */
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3); 
+}
+.controls button.image-btn { background-color: #e84393; color: white; font-weight: bold; }
+.controls button.image-btn:hover { background-color: #d63031; }
+        .controls button.delete-btn { background-color: #dc3545; font-weight: bold; }
+        .controls button.delete-btn:hover { background-color: #bd2130; }
+        .controls button.edit-btn { background-color: #17a2b8; font-weight: bold; }
+        .controls button.edit-btn:hover { background-color: #138496; }
+        .controls button.print-all-btn { background-color: #117a65; font-weight: bold; }
+        .controls button.print-all-btn:hover { background-color: #0e6655; }
+
+        .student-select { font-family: 'Battambang', sans-serif; padding: 8px; border-radius: 5px; border: 1px solid #ccc; font-size: 14px; display: none; max-width: 200px; }
+        input[type="file"] { display: none; }
+
+        .certificate-container { width: 800px; height: 1050px; background-image: radial-gradient(circle, #fffdf2, #f3de9e); background-size: cover; background-position: center; border: 25px solid transparent; border-image: repeating-linear-gradient(45deg, #d4af37, #d4af37 15px, #ffd700 15px, #ffd700 30px) 30; box-shadow: 0 15px 40px rgba(0,0,0,0.5); text-align: center; padding: 40px; position: relative; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; }
+        .school-logo { width: 130px; height: 130px; border-radius: 50%; border: 4px solid #0000cd; margin-bottom: 20px; object-fit: cover; background-color: #fff; box-shadow: 0 5px 15px rgba(0,0,0,0.2); cursor: pointer; }
+        [contenteditable="true"] { outline: none; transition: all 0.3s ease; }
+        [contenteditable="true"]:hover { background-color: rgba(255, 255, 255, 0.3); border-radius: 5px; cursor: text; }
+        
+        .school-name { font-family: 'Moul', serif; font-size: 40px; color: #ffd700; margin: 10px 0; text-shadow: -2px -2px 0 #8b4513, 2px -2px 0 #8b4513, -2px 2px 0 #8b4513, 2px 2px 0 #8b4513, 0 5px 5px rgba(0,0,0,0.3); }
+        .congrats-text { font-family: 'Moul', serif; font-size: 30px; color: #1e90ff; margin: 10px 0 35px 0; text-shadow: -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff, 2px 2px 0 #fff, 0 3px 5px rgba(0,0,0,0.2); }
+        .portrait-frame { 
+    width: 4cm; 
+    height: 6cm; 
+    border: 8px solid #d4af37; 
+    border-radius: 10px; 
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.8), inset 0 0 10px rgba(0,0,0,0.5); 
+    margin-bottom: 35px; 
+    background-color: #007bff; 
+    display: flex; 
+    justify-content: center; 
+    align-items: flex-end; 
+    overflow: hidden; 
+    position: relative; 
+    cursor: pointer; 
+}
+        .portrait-frame img { width: 100%; height: 100%; object-fit: cover; }
+        .student-name-banner { background: linear-gradient(to right, #000080, #4169e1, #000080); border: 4px solid #ffd700; border-radius: 40px; padding: 15px 60px; box-shadow: 0 5px 15px rgba(0,0,0,0.4); margin-bottom: 25px; }
+        .student-name { font-family: 'Moul', serif; font-size: 36px; color: #ff0000; margin: 0; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; }
+        .grade-container { display: flex; align-items: center; justify-content: center; margin-bottom: 25px; }
+        .grade-text { font-family: 'Moul', serif; font-size: 28px; color: #b22222; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; margin-right: 20px; }
+        .grade-box { background-color: #fff; border: 4px solid #b22222; color: #ff0000; font-family: 'Times New Roman', Times, serif; font-size: 45px; font-weight: bold; padding: 5px 25px; border-radius: 8px; box-shadow: 4px 4px 0 #b22222; }
+        .description-text { font-family: 'Moul', serif; font-size: 22px; color: #ff1493; margin: 10px 0; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; }
+        .date-text { font-family: 'Moul', serif; font-size: 24px; color: #228b22; margin-top: 15px; text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff; }
+
+        #bulkPrintContainer { display: none; }
+        .print-page { width: 800px; height: 1050px; page-break-after: always; break-after: page; box-sizing: border-box; background-image: radial-gradient(circle, #fffdf2, #f3de9e); background-size: cover; background-position: center; border: 25px solid transparent; border-image: repeating-linear-gradient(45deg, #d4af37, #d4af37 15px, #ffd700 15px, #ffd700 30px) 30; text-align: center; padding: 40px; display: flex; flex-direction: column; align-items: center; margin: 0 auto; }
+
+        @media print {
+            body { background-color: white; padding: 0; }
+            .controls { display: none; }
+            .certificate-container { box-shadow: none; }
+            body.print-all-mode .certificate-container { display: none !important; }
+            body.print-all-mode #bulkPrintContainer { display: block !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <button onclick="document.getElementById('logoUpload').click()">ដូរ Logo</button>
+        <button onclick="document.getElementById('photoUpload').click()">ដូររូបសិស្ស</button>
+        <button onclick="document.getElementById('bgUpload').click()">ដូរ BG</button>
+        <button class="excel-btn" onclick="exportExcel()">ចេញ Excel</button>
+        <button class="excel-btn" onclick="document.getElementById('excelUpload').click()">ចូល Excel</button>
+        <button class="word-btn" onclick="exportWord()">ចេញ Word</button>
+        <button class="gsheet-btn" id="saveSheetBtn" onclick="sendToGoogleSheet()">បញ្ជូនទៅ Sheet</button>
+        <button class="sync-btn" onclick="syncFromGoogleSheet()">Sync ពី Sheet</button>
+        
+        <select id="studentSelect" class="student-select" onchange="loadStudentData(this.value)">
+            <option value="">-- ជ្រើសរើសសិស្ស --</option>
+        </select>
+
+        <button class="edit-btn" id="editBtn" onclick="updateInGoogleSheet()">កែតម្រូវទិន្នន័យ</button>
+        <button class="delete-btn" id="deleteBtn" onclick="deleteFromGoogleSheet()">លុបទិន្នន័យនេះ</button>
+        <button class="print-all-btn" onclick="printAllStudents()">ព្រីនសិស្សទាំងអស់</button>
+        <button class="print-btn" onclick="window.print()">ព្រីន / PDF</button>
+<button class="home-btn" onclick="window.location.href='index.html'">🏠 ទំព័រដើម</button>
+<button class="image-btn" id="downloadImgBtn" onclick="downloadAsImage()">ទាញយកជារូបភាព</button>
+    </div>
+
+    <input type="file" id="logoUpload" accept="image/*">
+    <input type="file" id="photoUpload" accept="image/*">
+    <input type="file" id="bgUpload" accept="image/*">
+    <input type="file" id="excelUpload" accept=".xlsx, .xls">
+
+    <div class="certificate-container" id="certificate">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/83/Seal_of_the_Ministry_of_Education%2C_Youth_and_Sport_%28Cambodia%29.svg/1200px-Seal_of_the_Ministry_of_Education%2C_Youth_and_Sport_%28Cambodia%29.svg.png" 
+             alt="School Logo" class="school-logo" id="logoImg" onclick="document.getElementById('logoUpload').click()">
+        <div class="school-name" id="f_school" contenteditable="true">វិទ្យាល័យ ព្រះនរោត្តម សីហមុនី</div>
+        <div class="congrats-text" id="f_congrats" contenteditable="true">សូមអបអរសាទរចំពោះយុវសិស្ស</div>
+        <div class="portrait-frame" onclick="document.getElementById('photoUpload').click()">
+            <img src="https://via.placeholder.com/150x225/007bff/ffffff?text=4x6cm" alt="Student Portrait" id="photoImg">
+        </div>
+        <div class="student-name-banner"><h1 class="student-name" id="f_name" contenteditable="true">អ៊ុន គីមហុង</h1></div>
+        <div class="grade-container"><span class="grade-text" id="f_gradeText" contenteditable="true">ទទួលបាននិទ្ទេស</span><span class="grade-box" id="f_grade" contenteditable="true">B</span></div>
+        <div class="description-text" id="f_desc" contenteditable="true">ក្នុងការប្រឡងសញ្ញាបត្រមធ្យមសិក្សាទុតិយភូមិ</div>
+        <div class="date-text" id="f_date" contenteditable="true">សម័យប្រឡង៖ ២៨ សីហា ២០២៣</div>
+    </div>
+
+    <div id="bulkPrintContainer"></div>
+
+    <script>
+        const API_URL = "https://script.google.com/macros/s/AKfycbwuNWjlPkFEsY00We6WZzxYmnB-KJkYz7pdgj6Xugte2m4TC8WVuYYr82CkKAEK_OEu/exec"; 
+        let fetchedStudents = []; 
+        const defaultPhoto = "https://via.placeholder.com/150x225/007bff/ffffff?text=4x6cm";
+
+        // ១. មុខងារទាញទិន្នន័យ (Sync) - ឥឡូវមានទាញយករូបថតមកជាមួយ
+        function syncFromGoogleSheet() { 
+            if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") { alert("សូមជំនួស API_URL ជារបស់អ្នកសិន!"); return; } 
+            const selectDropdown = document.getElementById('studentSelect'); 
+            fetch(API_URL).then(res => res.json()).then(data => { 
+                if (data.length === 0) { alert("គ្មានទិន្នន័យទេ!"); return; } 
+                fetchedStudents = data; 
+                selectDropdown.innerHTML = '<option value="">-- ជ្រើសរើសសិស្ស --</option>'; 
+                data.forEach((student, index) => { 
+                    let opt = document.createElement('option'); 
+                    opt.value = index; 
+                    opt.text = student.name + " (" + student.grade + ")"; 
+                    selectDropdown.appendChild(opt); 
+                }); 
+                selectDropdown.style.display = "inline-block"; 
+            }).catch(err => alert("បញ្ហាទាញទិន្នន័យ!"));
+        }
+
+        // ២. មុខងារបង្ហាញទិន្នន័យលើអេក្រង់ពេលជ្រើសរើសឈ្មោះ (ប្តូររូបថតស្វ័យប្រវត្តិ)
+        function loadStudentData(index) { 
+            if (index === "") return; 
+            const student = fetchedStudents[index]; 
+            if(student.school) document.getElementById('f_school').innerText = student.school; 
+            if(student.congrats) document.getElementById('f_congrats').innerText = student.congrats; 
+            if(student.name) document.getElementById('f_name').innerText = student.name; 
+            if(student.gradeText) document.getElementById('f_gradeText').innerText = student.gradeText; 
+            if(student.grade) document.getElementById('f_grade').innerText = student.grade; 
+            if(student.desc) document.getElementById('f_desc').innerText = student.desc; 
+            if(student.date) document.getElementById('f_date').innerText = student.date; 
+            
+            // ប្តូររូបថត បើមានទិន្នន័យរូបភាពក្នុង Sheet ដាក់រូបនោះ, បើគ្មាន ដាក់រូបដើម
+            if(student.photo && student.photo.length > 50) {
+                document.getElementById('photoImg').src = student.photo;
+            } else {
+                document.getElementById('photoImg').src = defaultPhoto;
+            }
+        }
+
+        // ៣. មុខងារបញ្ជូនទៅ Sheet - រួមបញ្ចូលរូបថត
+        function sendToGoogleSheet() { 
+            if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") { alert("សូមជំនួស API_URL ជារបស់អ្នកសិន!"); return; } 
+            const btn = document.getElementById('saveSheetBtn'); 
+            btn.innerText = "កំពុងបញ្ជូន..."; btn.disabled = true; 
+            
+            // យក Source រូបភាពបច្ចុប្បន្ន
+            let currentPhoto = document.getElementById('photoImg').src;
+            if (currentPhoto === defaultPhoto) currentPhoto = ""; // កុំសេវរូបផ្លាសហូលឌ័រចូល Sheet
+
+            const payload = { 
+                action: 'save',
+                school: document.getElementById('f_school').innerText, 
+                congrats: document.getElementById('f_congrats').innerText, 
+                name: document.getElementById('f_name').innerText, 
+                gradeText: document.getElementById('f_gradeText').innerText, 
+                grade: document.getElementById('f_grade').innerText, 
+                desc: document.getElementById('f_desc').innerText, 
+                date: document.getElementById('f_date').innerText,
+                photo: currentPhoto // បញ្ជូនរូបថត
+            }; 
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+            .then(() => { alert("រក្សាទុកជោគជ័យ!"); btn.innerText = "បញ្ជូនទៅ Sheet"; btn.disabled = false; syncFromGoogleSheet(); })
+            .catch(() => { alert("បរាជ័យ"); btn.innerText = "បញ្ជូនទៅ Sheet"; btn.disabled = false; }); 
+        }
+
+        // ៤. មុខងារកែតម្រូវ - រួមបញ្ចូលរូបថតថ្មី
+        function updateInGoogleSheet() {
+            if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") { alert("សូមដាក់ Link API_URL ជាមុនសិន!"); return; }
+            const selectDropdown = document.getElementById('studentSelect');
+            if (selectDropdown.value === "") { alert("សូមជ្រើសរើសឈ្មោះសិស្សជាមុនសិន ដើម្បីកែតម្រូវ!"); return; }
+
+            const oldName = fetchedStudents[selectDropdown.value].name; 
+            const btn = document.getElementById('editBtn');
+            btn.innerText = "កំពុងកែតម្រូវ..."; btn.disabled = true;
+
+            let currentPhoto = document.getElementById('photoImg').src;
+            if (currentPhoto === defaultPhoto) currentPhoto = "";
+
+            const payload = {
+                action: 'update',
+                oldName: oldName, 
+                school: document.getElementById('f_school').innerText,
+                congrats: document.getElementById('f_congrats').innerText,
+                name: document.getElementById('f_name').innerText,
+                gradeText: document.getElementById('f_gradeText').innerText,
+                grade: document.getElementById('f_grade').innerText,
+                desc: document.getElementById('f_desc').innerText,
+                date: document.getElementById('f_date').innerText,
+                photo: currentPhoto // កែប្រែរូបថត
+            };
+
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+            .then(() => { alert("កែតម្រូវជោគជ័យ!"); btn.innerText = "កែតម្រូវទិន្នន័យ"; btn.disabled = false; syncFromGoogleSheet(); })
+            .catch(() => { alert("បរាជ័យ!"); btn.innerText = "កែតម្រូវទិន្នន័យ"; btn.disabled = false; });
+        }
+
+        // ៥. មុខងារលុបទិន្នន័យ
+        function deleteFromGoogleSheet() {
+            const currentName = document.getElementById('f_name').innerText;
+            if (!confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យរបស់សិស្សឈ្មោះ « " + currentName + " » មែនទេ?")) return;
+            if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE") { alert("សូមដាក់ Link API_URL ជាមុនសិន!"); return; }
+            const btn = document.getElementById('deleteBtn');
+            btn.innerText = "កំពុងលុប..."; btn.disabled = true;
+            fetch(API_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', name: currentName }) })
+            .then(() => { alert("លុបជោគជ័យ!"); btn.innerText = "លុបទិន្នន័យនេះ"; btn.disabled = false; syncFromGoogleSheet(); })
+            .catch(() => { alert("មានបញ្ហា!"); btn.innerText = "លុបទិន្នន័យនេះ"; btn.disabled = false; });
+        }
+
+        // ៦. មុខងារបង្រួមរូបភាពពេល Upload (Compress & Resize) ដើម្បីកុំអោយគាំង Google Sheet 
+        function handleImageUpload(inputId, imgId, isBg = false) { 
+            document.getElementById(inputId).addEventListener('change', function(e) { 
+                const file = e.target.files[0]; 
+                if (file) { 
+                    const reader = new FileReader(); 
+                    reader.onload = function(event) { 
+                        if(isBg) { 
+                            document.getElementById('certificate').style.backgroundImage = `url(${event.target.result})`; 
+                        } else if(imgId === 'photoImg') {
+                            // បង្រួមរូបសិស្សអោយទៅជាទំហំតូច (ប្រហាក់ប្រហែល 4x6 cm)
+                            let img = new Image();
+                            img.onload = function() {
+                                let canvas = document.createElement('canvas');
+                                let ctx = canvas.getContext('2d');
+                                let MAX_WIDTH = 300; let MAX_HEIGHT = 450; // ទំហំសមាមាត្រ 4x6 សម្រាប់រក្សាគុណភាពរូប
+                                let width = img.width; let height = img.height;
+                                if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+                                else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
+                                canvas.width = width; canvas.height = height;
+                                ctx.drawImage(img, 0, 0, width, height);
+                                let dataUrl = canvas.toDataURL('image/jpeg', 0.6); // Compress 60% quality
+                                document.getElementById(imgId).src = dataUrl;
+                            }
+                            img.src = event.target.result;
+                        } else {
+                            document.getElementById(imgId).src = event.target.result; 
+                        }
+                    }; 
+                    reader.readAsDataURL(file); 
+                } 
+            }); 
+        } 
+        handleImageUpload('logoUpload', 'logoImg'); 
+        handleImageUpload('photoUpload', 'photoImg'); 
+        handleImageUpload('bgUpload', null, true);
+
+        // ៧. ព្រីនទាំងអស់ (ប្តូររូបថតតាមសិស្សម្នាក់ៗ)
+        function printAllStudents() {
+            if (fetchedStudents.length === 0) { alert("សូមចុច 'Sync ពី Sheet' ជាមុនសិន!"); return; }
+            const container = document.getElementById('bulkPrintContainer');
+            container.innerHTML = ''; 
+            const logoSrc = document.getElementById('logoImg').src;
+            
+            fetchedStudents.forEach(student => {
+                let stuPhoto = (student.photo && student.photo.length > 50) ? student.photo : defaultPhoto;
+                let page = document.createElement('div');
+                page.className = 'print-page';
+                page.innerHTML = `
+                    <img src="${logoSrc}" class="school-logo">
+                    <div class="school-name">${student.school || ''}</div>
+                    <div class="congrats-text">${student.congrats || ''}</div>
+                    <div class="portrait-frame"><img src="${stuPhoto}"></div>
+                    <div class="student-name-banner"><h1 class="student-name">${student.name || ''}</h1></div>
+                    <div class="grade-container"><span class="grade-text">${student.gradeText || ''}</span><span class="grade-box">${student.grade || ''}</span></div>
+                    <div class="description-text">${student.desc || ''}</div>
+                    <div class="date-text">${student.date || ''}</div>
+                `;
+                container.appendChild(page);
+            });
+            document.body.classList.add('print-all-mode');
+            window.print();
+            setTimeout(() => { document.body.classList.remove('print-all-mode'); container.innerHTML = ''; }, 1000);
+        }
+
+        // (Excel / Word Export ទុកនៅដដែល)
+        function exportExcel() { /* កូដ Excel របស់អ្នក */ }
+        function exportWord() { /* កូដ Word របស់អ្នក */ }
+
+// --- មុខងារទាញយកលិខិតជារូបភាព (PNG) ---
+function downloadAsImage() {
+    const certElement = document.getElementById('certificate');
+    const btn = document.getElementById('downloadImgBtn');
+    const originalText = btn.innerText;
+    const studentName = document.getElementById('f_name').innerText.trim() || 'សិស្ស';
+    
+    btn.innerText = "កំពុងទាញយក...";
+    btn.disabled = true;
+
+    // ប្រើ html2canvas ដើម្បីថតផ្ទៃលិខិត
+    html2canvas(certElement, {
+        scale: 2, // គុណភាពទ្វេដង (ច្បាស់ជាងមុន)
+        useCORS: true, // អនុញ្ញាតឲ្យទាញយករូបពី Link ខាងក្រៅ (ដូចជា Logo ឬរូបសិស្ស)
+        backgroundColor: null // រក្សាផ្ទៃខាងក្រោយតាមដើម
+    }).then(canvas => {
+        // បំប្លែង Canvas ទៅជា Data URL របស់រូបភាព PNG
+        const imgData = canvas.toDataURL('image/png');
+        
+        // បង្កើតតំណភ្ជាប់ (Link) បណ្ដោះអាសន្ន ដើម្បីបញ្ជាឲ្យ Download
+        const link = document.createElement('a');
+        link.href = imgData;
+        link.download = 'លិខិតអបអរសាទរ_' + studentName + '.png'; // ឈ្មោះ File រូបភាព
+        
+        document.body.appendChild(link);
+        link.click(); // បញ្ជាឲ្យទាញយក
+        document.body.removeChild(link);
+        
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }).catch(err => {
+        console.error("មានបញ្ហាក្នុងការទាញយករូបភាព:", err);
+        alert("បរាជ័យក្នុងការទាញយកជារូបភាព! សូមព្យាយាមម្ដងទៀត។");
+        btn.innerText = originalText;
+        btn.disabled = false;
+    });
+}
+    </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
