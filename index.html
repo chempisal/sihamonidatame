@@ -10,6 +10,30 @@
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;700&family=Moul&display=swap" rel="stylesheet">
     
     <style>
+/* ទម្រង់ប្រអប់ផ្ទុកអក្សររត់ */
+  .scrolling-container {
+    width: 100%;
+    overflow: hidden; /* លាក់អក្សរណាដែលហួសប្រអប់ */
+    background-color: #1a1a1a; /* ពណ៌ផ្ទៃខាងក្រោយ */
+    color: #ffffff; /* ពណ៌អក្សរ */
+    padding: 10px 0;
+    font-family: 'Hanuman', Arial, sans-serif;
+    font-size: 20px;
+  }
+
+  /* ការកំណត់ចលនាអក្សរ */
+  .scrolling-text {
+    display: inline-block;
+    white-space: nowrap; /* ការពារមិនឲ្យអក្សរធ្លាក់ចុះបន្ទាត់ */
+    animation: scroll-left 15s linear infinite; /* 15s គឺជារយៈពេល លេខកាន់តែធំ អក្សររត់កាន់តែយឺត */
+  }
+
+  /* បង្កើតចលនារត់ពីស្តាំទៅឆ្វេង */
+  @keyframes scroll-left {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+        
         body { font-family: 'Kantumruy Pro', sans-serif; }
         .khmer-moul { font-family: 'Moul', serif; }
         .drag-handle { cursor: move; }
@@ -144,6 +168,10 @@
                 <a href="https://t.me/pheasalchem" class="btn-fancy bg-gradient-to-r from-amber-500 to-orange-600 text-white px-8 py-4 rounded-2xl font-bold shadow-2xl flex items-center gap-3 border border-amber-400/50">
                     ⭐ អភិវឌ្ឍកម្មវិធីដោយ៖ លោកគ្រូ ចែម ភាសាល បរិញ្ញាបត្រពត៌មានវិទ្យា
                 </a>
+                <div class="scrolling-container">
+    <div class="scrolling-text">
+      សូមស្វាគមន៍មកកាន់គេហទំព័ររបស់យើង! នេះជាអក្សររត់កាត់ផ្ទាំងអេក្រង់ដែលប្រើប្រាស់ CSS Animation...
+    </div>
             </div>
         </section>
 
