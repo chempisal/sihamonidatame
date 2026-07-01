@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធគ្រប់គ្រងពិន្ទុ - Excel & Google Sheets</title>
+    <link href="https://fonts.googleapis.com/css2?family=Khmer+OS+Moul&family=Khmer+OS+Battambang&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #d4af37;
+            --secondary-color: #2c3e50;
+            --active-tab-color: #2980b9;
+            --bg-color: #f4f7f6;
+            --table-font-size: 14px;
+        }
+
+        body {
+            font-family: 'Khmer OS Battambang', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .toolbar {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Khmer OS Battambang';
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+            color: white;
+        }
+
+        /* រចនាបថរបស់ប៊ូតុងទៅផ្ទះ */
+        .home-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 28px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            text-decoration: none;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .home-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(124, 58, 237, 0.5);
+            background: linear-gradient(135deg, #5a52e9, #8b4bfb);
+        }
+
+        .home-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .home-btn svg {
+            width: 20px;
+            height: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .home-btn:hover svg {
+            transform: scale(1.1);
+        }
+
+        .btn-edit { background-color: #f39c12; }
+        .btn-add { background-color: #27ae60; }
+        .btn-export { background-color: #1D6F42; }
+        .btn-import { background-color: #d35400; }
+        .btn-cloud { background-color: #4285F4; }
+        .btn-fetch { background-color: #8e44ad; } /* ពណ៌ស្វាយសម្រាប់ប៊ូតុងទាញទិន្នន័យ */
+        .btn-print { background-color: #34495e; }
+
+        .btn:hover { opacity: 0.8; transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .font-slider { display: flex; align-items: center; gap: 10px; background: #eee; padding: 5px 15px; border-radius: 8px; }
+        .tabs-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .tab-btn { padding: 8px 16px; border: 1px solid #ccc; background: #f8f9fa; border-radius: 6px; cursor: pointer; font-family: 'Khmer OS Battambang'; font-size: 13px; transition: all 0.3s ease; }
+        .tab-btn:hover { background: #e2e8f0; }
+        .tab-btn.active { background: var(--active-tab-color); color: white; border-color: var(--active-tab-color); font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .tab-btn.total-tab { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .tab-btn.total-tab.active { background: #b5952f; }
+
+        .report-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); max-width: 1300px; margin: 0 auto; border-top: 10px solid var(--primary-color); position: relative; }
+        .main-title { font-family: 'Khmer OS Moul'; text-align: center; color: var(--secondary-color); margin-bottom: 30px; line-height: 1.8; }
+        .header-grid { display: grid; grid-template-columns: repeat(3, 1fr) auto; gap: 20px; margin-bottom: 25px; font-size: 14px; }
+        .editable-field { color: #0056b3; border-bottom: 1px dashed #ccc; padding: 0 5px; outline: none; }
+        .table-wrapper { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; font-size: var(--table-font-size); }
+        th, td { border: 1px solid #ccc; padding: 8px 4px; text-align: center; }
+        th { background-color: #fdf2e9; color: #854d0e; font-weight: bold; }
+        .subject-name { text-align: left; padding-left: 10px; font-weight: bold; background: #fafafa; }
+
+        tbody { display: none; }
+        tbody.active-tbody { display: table-row-group; }
+        [contenteditable="true"] { background-color: #fff9c4 !important; transition: 0.3s; }
+
+        .footer-section { margin-top: 30px; display: flex; justify-content: flex-end; }
+        .sign-area { text-align: center; width: 300px; }
+
+        @media print {
+            .toolbar, .tabs-container, .btn-remove { display: none !important; }
+            body { background: white; padding: 0; }
+            .report-card { box-shadow: none; border: none; padding: 0; max-width: 100%; }
+            [contenteditable="true"] { background-color: transparent !important; }
+            tbody.active-tbody { display: table-row-group !important; }
+        }
+        .btn-remove { color: #e74c3c; cursor: pointer; font-size: 12px; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+    <a href="#" class="home-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M11.47 3.84a.75.75 0 011.06 0l8.69 8.69a.75.75 0 101.06-1.06l-8.689-8.69a2.25 2.25 0 00-3.182 0l-8.69 8.69a.75.75 0 001.061 1.06l8.69-8.69z" />
+            <path d="M12 5.432l8.159 8.159c.03.03.06.058.091.086v6.198c0 1.035-.84 1.875-1.875 1.875H15a.75.75 0 01-.75-.75v-4.5a.75.75 0 00-.75-.75h-3a.75.75 0 00-.75.75v4.5a.75.75 0 01-.75.75H5.625M19.5 11.75v10.5a.75.75 0 01-.75.75H5.625a.75.75 0 01-.75-.75V11.75" />
+        </svg>
+        ទៅកាន់ទំព័រដើម
+    </a>
+
+    <div class="toolbar">
+        <button class="btn btn-edit" onclick="toggleEdit()">
+            <i class="fas fa-edit"></i> កែប្រែទិន្នន័យ
+        </button>
+        <button class="btn btn-add" onclick="addNewSubject()">
+            <i class="fas fa-plus-circle"></i> បន្ថែមមុខវិជ្ជា
+        </button>
+
+        <button class="btn btn-export" onclick="exportToExcel()">
+            <i class="fas fa-file-excel"></i> នាំចេញ Excel
+        </button>
+        <button class="btn btn-import" onclick="document.getElementById('excelUpload').click()">
+            <i class="fas fa-file-upload"></i> នាំចូល Excel
+        </button>
+        <input type="file" id="excelUpload" accept=".xlsx, .xls" style="display: none;" onchange="importFromExcel(event)">
+
+        <button class="btn btn-cloud" onclick="saveToGoogleSheets()">
+            <i class="fas fa-cloud-upload-alt"></i> រក្សាទុកទៅ Google Sheet
+        </button>
+
+        <button class="btn btn-fetch" onclick="loadFromGoogleSheets()">
+            <i class="fas fa-cloud-download-alt"></i> ទាញទិន្នន័យពី Google Sheet
+        </button>
+
+        <button class="btn btn-print" onclick="window.print()">
+            <i class="fas fa-print"></i> Print
+        </button>
+
+        <div class="font-slider">
+            <i class="fas fa-font"></i>
+            <input type="range" min="10" max="24" value="14" oninput="changeFontSize(this.value)">
+            <span id="font-val">14px</span>
+        </div>
+    </div>
+
+    <div class="tabs-container" id="tabsContainer"></div>
+
+    <div class="report-card" id="printArea">
+        <div class="main-title">តារាងស្រង់ពិន្ទុតាមមុខវិជ្ជា សម្រាប់សាលាមធ្យមសិក្សា ២០២៥-២០២៦</div>
+
+        <div class="header-grid">
+            <div>
+                លេខកូដសាលា : <span class="editable-field" contenteditable="false">................</span><br>
+                ឃុំ-សង្កាត់ : <span class="editable-field" contenteditable="false">ឃុំព្រៃគ្រី</span>
+            </div>
+            <div>
+                ខេត្ត : <span class="editable-field" contenteditable="false">កំពង់ឆ្នាំង</span><br>
+                សាលា : <span class="editable-field" contenteditable="false">វិទ្យាល័យ ព្រះនរោត្តម សីហមុនី</span>
+            </div>
+            <div>
+                ស្រុក-ខណ្ឌ : <span class="editable-field" contenteditable="false">ស្រុកជលគិរី</span><br>
+                ទូរស័ព្ទ : <span class="editable-field" contenteditable="false">................</span>
+            </div>
+            <div style="text-align: right;">
+                វិទ្យាសាស្ត្រ <input type="checkbox"><br>
+                វិទ្យាសាស្ត្រសង្គម <input type="checkbox">
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table id="scoreTable">
+                <thead>
+                    <tr>
+                        <th colspan="2" id="displayClassName">ថ្នាក់ទី 7A</th>
+                        <th colspan="16">កម្រិតមធ្យមភាគពិន្ទុប្រចាំឆមាស (ចែកជាចន្លោះ)</th>
+                        <th rowspan="2">សរុប</th>
+                        <th rowspan="2">សរុបសិស្សជាប់</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 150px;">មុខវិជ្ជា</th>
+                        <th style="width: 60px;">ភេទ</th>
+                        <th>0</th><th>1-10</th><th>11-20</th><th>21-30</th><th>31-40</th><th>41-50</th><th>51-60</th><th>61-70</th><th>71-80</th><th>81-90</th><th>91-100</th><th>111-120</th><th>121-130</th><th>131-140</th><th>141-150</th><th>...</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+
+        <div class="footer-section">
+            <div class="sign-area">
+                ថ្ងៃទី <span class="editable-field" contenteditable="false">01</span> ខែ <span class="editable-field" contenteditable="false">07</span> ឆ្នាំ <span class="editable-field" contenteditable="false">2026</span><br>
+                អ្នករៀបចំតារាង<br><br><br><br>
+                <strong><span class="editable-field" contenteditable="false">ឈ្មោះ គ្រូ</span></strong>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const classesList = ["7A", "7B", "7C", "8A", "8B", "8C", "9A", "9B", "10A", "10B", "10C", "11A", "11B", "11C", "12A", "12B", "សរុបរួម"];
+        const subjects = ["ភាសាខ្មែរ", "សីលធម៌", "ប្រវត្តិវិទ្យា", "ភូមិវិទ្យា", "គណិតវិទ្យា", "រូបវិទ្យា", "គីមីវិទ្យា", "ជីវវិទ្យា", "ផែនដីវិទ្យា", "ភាសាបរទេស"];
+        let isEditMode = false;
+        let currentActiveTab = "7A";
+
+        function initApp() {
+            const tabsContainer = document.getElementById('tabsContainer');
+            const tableElement = document.getElementById('scoreTable');
+
+            tabsContainer.innerHTML = "";
+            // សម្អាត tbody ចាស់ៗចោលមុននឹងបង្កើតថ្មី (ជៀសវាងការស្ទួនពេល Load ឡើងវិញ)
+            document.querySelectorAll('#scoreTable tbody').forEach(el => el.remove());
+
+            classesList.forEach((cls, index) => {
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${cls === 'សរុបរួម' ? 'total-tab' : ''} ${cls === currentActiveTab ? 'active' : ''}`;
+                btn.innerText = cls === 'សរុបរួម' ? cls : `ថ្នាក់ ${cls}`;
+                btn.onclick = () => switchTab(cls, btn);
+                tabsContainer.appendChild(btn);
+
+                const tbody = document.createElement('tbody');
+                tbody.id = `tbody-${cls.replace(/\s+/g, '-')}`;
+                if (cls === currentActiveTab) tbody.className = 'active-tbody';
+
+                subjects.forEach(sub => tbody.innerHTML += createRow(sub));
+                tableElement.appendChild(tbody);
+            });
+
+            tableElement.addEventListener('input', function(e) {
+                if (e.target.tagName === 'TD' && e.target.contentEditable === 'true') updateRowTotal(e.target.parentElement);
+            });
+        }
+
+        function createRow(subjectName, rowFData = null, rowMData = null) {
+            let colsF = rowFData ? rowFData : Array(16).fill('0');
+            let colsM = rowMData ? rowMData : Array(16).fill('0');
+
+            return `
+                <tr>
+                    <td rowspan="2" class="subject-name"><i class="fas fa-times-circle btn-remove" onclick="this.closest('tr').nextElementSibling.remove(); this.closest('tr').remove();"></i> ${subjectName}</td>
+                    <td>ស្រី</td>${colsF.map(val => `<td>${val}</td>`).join('')}<td>0</td><td>0</td>
+                </tr>
+                <tr>
+                    <td>ប្រុស</td>${colsM.map(val => `<td>${val}</td>`).join('')}<td>0</td><td>0</td>
+                </tr>
+            `;
+        }
+
+        function updateRowTotal(row) {
+            const hasSubject = row.querySelector('.subject-name') !== null;
+            const startIndex = hasSubject ? 2 : 1;
+            const endIndex = hasSubject ? 17 : 16;
+            const totalIndex = hasSubject ? 18 : 17;
+
+            let sum = 0;
+            for (let i = startIndex; i <= endIndex; i++) sum += parseInt(row.cells[i].innerText) || 0;
+            row.cells[totalIndex].innerText = sum;
+        }
+
+        function calculateGrandTotal() {
+            const totalTbody = document.getElementById('tbody-សរុបរួម');
+            if(!totalTbody) return;
+            const otherTbodys = Array.from(document.querySelectorAll('tbody')).filter(tb => tb.id !== 'tbody-សរុបរួម');
+            const aggregation = {};
+
+            otherTbodys.forEach(tb => {
+                let currentSubject = "";
+                Array.from(tb.rows).forEach(row => {
+                    const subEl = row.querySelector('.subject-name');
+                    if (subEl) currentSubject = subEl.innerText.trim();
+                    const hasSubject = subEl !== null;
+                    const gender = row.cells[hasSubject ? 1 : 0].innerText.trim();
+                    const key = `${currentSubject}_${gender}`;
+
+                    if (!aggregation[key]) aggregation[key] = Array(17).fill(0);
+
+                    const startIndex = hasSubject ? 2 : 1;
+                    for (let i = 0; i < 16; i++) aggregation[key][i] += parseInt(row.cells[startIndex + i].innerText) || 0;
+                    aggregation[key][16] += parseInt(row.cells[row.cells.length - 1].innerText) || 0;
+                });
+            });
+
+            totalTbody.innerHTML = "";
+            const uniqueSubjects = [...new Set(otherTbodys.flatMap(tb => Array.from(tb.querySelectorAll('.subject-name')).map(subEl => subEl.innerText.trim())))];
+
+            uniqueSubjects.forEach(sub => {
+                const dataF = aggregation[`${sub}_ស្រី`] || Array(17).fill(0);
+                const dataM = aggregation[`${sub}_ប្រុស`] || Array(17).fill(0);
+                const sumF = dataF.slice(0, 16).reduce((a, b) => a + b, 0);
+                const sumM = dataM.slice(0, 16).reduce((a, b) => a + b, 0);
+
+                totalTbody.innerHTML += `
+                    <tr>
+                        <td rowspan="2" class="subject-name"><i class="fas fa-times-circle btn-remove" onclick="this.closest('tr').nextElementSibling.remove(); this.closest('tr').remove();"></i> ${sub}</td>
+                        <td>ស្រី</td>${dataF.slice(0, 16).map(val => `<td>${val}</td>`).join('')}<td>${sumF}</td><td>${dataF[16]}</td>
+                    </tr>
+                    <tr>
+                        <td>ប្រុស</td>${dataM.slice(0, 16).map(val => `<td>${val}</td>`).join('')}<td>${sumM}</td><td>${dataM[16]}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function switchTab(className, clickedBtn) {
+            currentActiveTab = className;
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            if(clickedBtn) clickedBtn.classList.add('active');
+            document.getElementById('displayClassName').innerText = className === 'សរុបរួម' ? 'ទិន្នន័យសរុបរួម' : `ថ្នាក់ទី ${className}`;
+            if (className === 'សរុបរួម') calculateGrandTotal();
+
+            document.querySelectorAll('tbody').forEach(tb => tb.classList.remove('active-tbody'));
+            const targetTbody = document.getElementById(`tbody-${className.replace(/\s+/g, '-')}`);
+            if(targetTbody) targetTbody.classList.add('active-tbody');
+            setEditableState(isEditMode);
+        }
+
+        function toggleEdit() {
+            if (currentActiveTab === 'សរុបរួម') return alert("អ្នកមិនអាចកែប្រែទិន្នន័យលើផ្ទាំង 'សរុបរួម' បានទេ!");
+            isEditMode = !isEditMode;
+            setEditableState(isEditMode);
+            const btn = document.querySelector('.btn-edit');
+            btn.innerHTML = isEditMode ? '<i class="fas fa-save"></i> រក្សាទុកទិន្នន័យ' : '<i class="fas fa-edit"></i> កែប្រែទិន្នន័យ';
+            btn.style.backgroundColor = isEditMode ? "#27ae60" : "#f39c12";
+        }
+
+        function setEditableState(state) {
+            document.querySelectorAll('.editable-field').forEach(f => f.contentEditable = state);
+            if (currentActiveTab === 'សរុបរួម') return;
+            const activeTbody = document.querySelector('tbody.active-tbody');
+            if(activeTbody) {
+                Array.from(activeTbody.rows).forEach(row => {
+                    const startIndex = row.querySelector('.subject-name') !== null ? 2 : 1;
+                    for (let i = startIndex; i < row.cells.length; i++) row.cells[i].contentEditable = state;
+                });
+            }
+        }
+
+        function changeFontSize(size) {
+            document.getElementById('scoreTable').style.fontSize = size + 'px';
+            document.getElementById('font-val').innerText = size + 'px';
+        }
+
+        function addNewSubject() {
+            if (currentActiveTab === 'សរុបរួម') return alert("មិនអាចបន្ថែមមុខវិជ្ជាលើផ្ទាំងសរុបរួមបានទេ!");
+            const name = prompt(`បញ្ចូលឈ្មោះមុខវិជ្ជាថ្មីសម្រាប់ ${currentActiveTab}:`);
+            if (name) {
+                document.querySelector('tbody.active-tbody').insertAdjacentHTML('beforeend', createRow(name));
+                if(isEditMode) setEditableState(true);
+            }
+        }
+
+        function exportToExcel() {
+            calculateGrandTotal();
+            let wb = XLSX.utils.book_new();
+            classesList.forEach(cls => {
+                let tbody = document.getElementById(`tbody-${cls.replace(/\s+/g, '-')}`);
+                if (!tbody) return;
+                let sheetData = [
+                    [`ថ្នាក់ ${cls}`, "", "កម្រិតមធ្យមភាគពិន្ទុប្រចាំឆមាស", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "សរុប", "អវត្តមាន"],
+                    ["មុខវិជ្ជា", "ភេទ", "0", "1-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81-90", "91-100", "111-120", "121-130", "131-140", "141-150", "...", "សរុប", "អវត្តមាន"]
+                ];
+
+                Array.from(tbody.rows).forEach(row => {
+                    let rowData = [];
+                    let subjectCell = row.querySelector('.subject-name');
+                    rowData.push(subjectCell ? subjectCell.innerText.trim() : "");
+                    row.querySelectorAll('td:not(.subject-name)').forEach(cell => rowData.push(cell.innerText.trim()));
+                    sheetData.push(rowData);
+                });
+
+                let ws = XLSX.utils.aoa_to_sheet(sheetData);
+                ws['!merges'] = [{ s: {r:0, c:0}, e: {r:0, c:1} }, { s: {r:0, c:2}, e: {r:0, c:17} }];
+                XLSX.utils.book_append_sheet(wb, ws, cls);
+            });
+            XLSX.writeFile(wb, "ទិន្នន័យពិន្ទុសិស្ស.xlsx");
+        }
+
+        function importFromExcel(event) {
+            let file = event.target.files[0];
+            if (!file) return;
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                let wb = XLSX.read(new Uint8Array(e.target.result), {type: 'array'});
+                wb.SheetNames.forEach(sheetName => {
+                    if (classesList.includes(sheetName) && sheetName !== 'សរុបរួម') {
+                        let jsonData = XLSX.utils.sheet_to_json(wb.Sheets[sheetName], {header: 1});
+                        let tbody = document.getElementById(`tbody-${sheetName.replace(/\s+/g, '-')}`);
+                        if (tbody && jsonData.length > 2) {
+                            tbody.innerHTML = "";
+                            for (let i = 2; i < jsonData.length; i += 2) {
+                                let rowF = jsonData[i]; let rowM = jsonData[i+1];
+                                if (!rowF || !rowF[0]) continue;
+                                let scoresF = [], scoresM = [];
+                                for(let col=2; col<=17; col++){ scoresF.push(rowF[col] || 0); scoresM.push(rowM ? (rowM[col] || 0) : 0); }
+                                tbody.innerHTML += createRow(rowF[0], scoresF, scoresM);
+                                updateRowTotal(tbody.lastElementChild.previousElementSibling);
+                                updateRowTotal(tbody.lastElementChild);
+                            }
+                        }
+                    }
+                });
+                calculateGrandTotal();
+                alert("នាំចូលទិន្នន័យពី Excel បានជោគជ័យ!");
+                event.target.value = '';
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // =======================================================
+        // មុខងារ រក្សាទុក និង ទាញទិន្នន័យ ពី Google Sheet
+        // =======================================================
+        const GOOGLE_APP_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-Zz527SIQJ0VJo4d7k0gD8lPrGymICDuarNdm2QBVthnt-UEpcpkwqepscnOKYWoa/exec';
+
+        async function saveToGoogleSheets() {
+            if (GOOGLE_APP_SCRIPT_URL === '' || GOOGLE_APP_SCRIPT_URL.includes('YOUR_WEB_APP_URL')) {
+                alert("សូមបញ្ចូលតំណភ្ជាប់ (URL) របស់ Google Apps Script ទៅក្នុងកូដជាមុនសិន!");
+                return;
+            }
+
+            calculateGrandTotal();
+            let payload = {};
+
+            classesList.forEach(cls => {
+                let tbody = document.getElementById(`tbody-${cls.replace(/\s+/g, '-')}`);
+                if (!tbody) return;
+
+                let sheetData = [];
+                sheetData.push([`ថ្នាក់ ${cls}`, "", "កម្រិតមធ្យមភាគពិន្ទុប្រចាំឆមាស", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "សរុប", "អវត្តមាន"]);
+                sheetData.push(["មុខវិជ្ជា", "ភេទ", "0", "1-10", "11-20", "21-30", "31-40", "41-50", "51-60", "61-70", "71-80", "81-90", "91-100", "111-120", "121-130", "131-140", "141-150", "...", "សរុប", "អវត្តមាន"]);
+
+                Array.from(tbody.rows).forEach(row => {
+                    let rowData = [];
+                    let subjectCell = row.querySelector('.subject-name');
+                    rowData.push(subjectCell ? subjectCell.innerText.trim() : "");
+
+                    row.querySelectorAll('td:not(.subject-name)').forEach(cell => {
+                        rowData.push(cell.innerText.trim());
+                    });
+                    sheetData.push(rowData);
+                });
+                payload[cls] = sheetData;
+            });
+
+            const btn = document.querySelector('.btn-cloud');
+            try {
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> កំពុងរក្សាទុក...';
+                btn.disabled = true;
+
+                let response = await fetch(GOOGLE_APP_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+
+                let result = await response.json();
+                if (result.status === "success") {
+                    alert("ទិន្នន័យត្រូវបានរក្សាទុកទៅ Google Sheet ដោយជោគជ័យ!");
+                } else {
+                    alert("មានបញ្ហា: " + result.message);
+                }
+            } catch (error) {
+                alert("ការតភ្ជាប់មានបញ្ហា! សូមពិនិត្យមើល URL ឬ Internet របស់អ្នក។");
+                console.error(error);
+            } finally {
+                btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> រក្សាទុកទៅ Google Sheet';
+                btn.disabled = false;
+            }
+        }
+
+        // មុខងារទាញទិន្នន័យស្វ័យប្រវត្ត និងដោយដៃពី Google Sheet
+        async function loadFromGoogleSheets() {
+            if (GOOGLE_APP_SCRIPT_URL === '' || GOOGLE_APP_SCRIPT_URL.includes('YOUR_WEB_APP_URL')) {
+                console.log("មិនទាន់បានដាក់ Apps Script URL ទេ។");
+                return;
+            }
+
+            const btn = document.querySelector('.btn-fetch');
+            try {
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> កំពុងទាញទិន្នន័យ...';
+                    btn.disabled = true;
+                }
+
+                // ផ្ញើ GET request ទៅកាន់ Apps Script ដោយភ្ជាប់ Query Parameter action=read
+                let response = await fetch(`${GOOGLE_APP_SCRIPT_URL}?action=read`, {
+                    method: 'GET'
+                });
+
+                let result = await response.json();
+
+                if (result && typeof result === 'object' && !result.error) {
+                    classesList.forEach(sheetName => {
+                        if (sheetName !== 'សរុបរួម' && result[sheetName]) {
+                            let jsonData = result[sheetName];
+                            let tbody = document.getElementById(`tbody-${sheetName.replace(/\s+/g, '-')}`);
+
+                            if (tbody && jsonData.length > 2) {
+                                tbody.innerHTML = ""; // សម្អាតទិន្នន័យគំរូចាស់ចោល
+
+                                for (let i = 2; i < jsonData.length; i += 2) {
+                                    let rowF = jsonData[i];
+                                    let rowM = jsonData[i+1];
+                                    if (!rowF || !rowF[0]) continue;
+
+                                    let scoresF = [], scoresM = [];
+                                    // ចាប់យកពិន្ទុពី Column ទី 2 ដល់ 17
+                                    for(let col = 2; col <= 17; col++){
+                                        scoresF.push(rowF[col] !== undefined ? rowF[col] : '0');
+                                        scoresM.push((rowM && rowM[col] !== undefined) ? rowM[col] : '0');
+                                    }
+
+                                    tbody.innerHTML += createRow(rowF[0], scoresF, scoresM);
+                                    updateRowTotal(tbody.lastElementChild.previousElementSibling);
+                                    updateRowTotal(tbody.lastElementChild);
+                                }
+                            }
+                        }
+                    });
+
+                    calculateGrandTotal();
+                    // ធ្វើបច្ចុប្បន្នភាពការបង្ហាញផ្ទាំង Tab បច្ចុប្បន្ន
+                    switchTab(currentActiveTab, document.querySelector('.tab-btn.active'));
+                    console.log("បានទាញទិន្នន័យពី Google Sheet ជោគជ័យ។");
+                }
+            } catch (error) {
+                console.error("កំហុសក្នុងការទាញទិន្នន័យ៖", error);
+            } finally {
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-cloud-download-alt"></i> ទាញទិន្នន័យពី Google Sheet';
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        // ដំណើរការរួមគ្នានៅពេលបើកទំព័រដំបូង
+        window.onload = async function() {
+            initApp();                // បង្កើតតារាងគំរូសិន
+            await loadFromGoogleSheets(); // រួចទាញទិន្នន័យពិតពី Google Sheet មកជំនួសស្វ័យប្រវត្ត
+        };
+    </script>
+</body>
+</html>
