@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រព័ន្ធរើសឈ្មោះសិស្ស (មាន Template & Home)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body { font-family: 'Khmer OS Battambang', 'Battambang', sans-serif; background-color: #f0fdf4; }
+        .winner-pop { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .tab-btn { transition: all 0.2s ease-in-out; }
+        .tab-active { background-color: #15803d; color: white; box-shadow: 0 4px 6px -1px rgba(21, 128, 61, 0.3); border-color: #15803d; }
+        .tab-inactive { background-color: #f3f4f6; color: #4b5563; border-color: #d1d5db; }
+        .tab-inactive:hover { background-color: #e5e7eb; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative">
+
+    <!-- ប៊ូតុងទៅទំព័រដើម (Home) -->
+    <div class="absolute top-4 left-4 sm:top-6 sm:left-6">
+        <button onclick="window.location.reload()" class="flex items-center gap-2 bg-white text-green-700 px-4 py-2 rounded-lg shadow-md hover:bg-green-50 transition border border-green-200">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+            <span class="font-bold text-sm hidden sm:inline">ទំព័រដើម</span>
+        </button>
+    </div>
+
+    <!-- ផ្នែកចំណងជើង -->
+    <div class="mb-6 mt-10 sm:mt-0 flex flex-col items-center justify-center text-center">
+        <div class="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-full p-2 shadow-lg mb-3 flex items-center justify-center border-4 border-green-600">
+            <svg class="w-10 h-10 sm:w-12 sm:h-12 text-green-700" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15 l5-2.73v3.72z"/></svg>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-gray-800">វិទ្យាល័យចំណេះដឹងទូទៅ</h1>
+        <p class="text-gray-600 mt-1">ប្រព័ន្ធជ្រើសរើសឈ្មោះសិស្សដោយចៃដន្យ</p>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-xl max-w-6xl w-full p-6 sm:p-8 grid grid-cols-1 xl:grid-cols-12 gap-8 border-t-8 border-green-600">
+        
+        <!-- ផ្នែកខាងឆ្វេង: ការគ្រប់គ្រងទិន្នន័យ -->
+        <div class="space-y-6 xl:col-span-7">
+            
+            <div class="space-y-3 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                <!-- ចំណងជើង និង ប៊ូតុងទាញយកពុម្ពគំរូ -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-2">
+                    <label class="block text-sm font-bold text-blue-800">១. គ្រប់គ្រងបញ្ជីឈ្មោះសិស្ស (ប្រភពទិន្នន័យ)</label>
+                    <button onclick="downloadTemplate()" class="text-sm text-blue-600 hover:text-blue-800 underline flex items-center gap-1 font-semibold bg-white px-2 py-1 rounded shadow-sm border border-blue-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        ទាញយកពុម្ពគំរូ Excel
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-2">
+                    <!-- ១. ទាញទិន្នន័យពី Excel -->
+                    <label for="excel-file" class="flex flex-col items-center justify-center h-20 border-2 border-dashed border-green-400 rounded-lg cursor-pointer bg-white hover:bg-green-50 transition w-full shadow-sm">
+                        <span class="text-xs text-green-700 font-semibold mb-1">១. Import ពី Excel</span>
+                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        <input id="excel-file" type="file" class="hidden" accept=".xlsx, .xls" onchange="importExcel(event)" />
+                    </label>
+
+                    <!-- ២. Upload ទៅ GS -->
+                    <button onclick="uploadStudentsToGoogleSheet()" class="flex flex-col items-center justify-center h-20 border-2 border-orange-400 rounded-lg cursor-pointer bg-white hover:bg-orange-50 transition w-full shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" id="btn-upload-gs" disabled>
+                        <span class="text-xs text-orange-700 font-semibold mb-1">២. Upload ទៅ GS</span>
+                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                    </button>
+
+                    <!-- ៣. ទាញពី GS -->
+                    <button onclick="fetchDataFromGoogleSheet()" class="flex flex-col items-center justify-center h-20 border-2 border-blue-400 rounded-lg cursor-pointer bg-white hover:bg-blue-50 transition w-full shadow-sm" id="btn-fetch-gs">
+                        <span class="text-xs text-blue-700 font-semibold mb-1">៣. ទាញពី Google Sheet</span>
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ជ្រើសរើសថ្នាក់ -->
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-2">២. ជ្រើសរើសថ្នាក់ ដើម្បីរ៉េនដឹង</label>
+                <div id="tabs-container" class="flex flex-wrap gap-2 p-3 bg-gray-50 rounded-lg border border-gray-200 min-h-[80px]">
+                    <p class="text-gray-400 text-sm w-full text-center my-auto" id="tab-placeholder">
+                        សូម Import Excel ឬ ទាញពី Google Sheet ជាមុនសិន...
+                    </p>
+                </div>
+            </div>
+
+            <!-- ប៊ូតុងបញ្ជា -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <button onclick="startRandom()" class="col-span-2 sm:col-span-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-2 rounded-lg shadow-md transition duration-200 flex justify-center items-center text-sm disabled:bg-gray-400" id="btn-random" disabled>
+                    ចាប់ផ្តើមរ៉េនដឹង
+                </button>
+                
+                <button onclick="saveResultsToGoogleSheet()" class="col-span-2 sm:col-span-1 bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-2 rounded-lg shadow-md transition duration-200 flex flex-col justify-center items-center text-xs disabled:bg-gray-400" id="btn-save-gs" disabled>
+                    <span>Save អ្នកឈ្នះ</span>
+                    <span>ចូល GS</span>
+                </button>
+
+                <button onclick="exportExcel()" class="col-span-2 sm:col-span-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-2 rounded-lg shadow-md transition duration-200 flex flex-col justify-center items-center text-xs disabled:bg-gray-400" id="btn-export" disabled>
+                    <span>Export អ្នកឈ្នះ</span>
+                    <span>ជា Excel</span>
+                </button>
+
+                <button onclick="resetSystem()" class="col-span-2 sm:col-span-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-2 rounded-lg shadow-md transition duration-200 flex justify-center items-center text-sm disabled:bg-gray-300 disabled:text-gray-500" id="btn-reset" disabled>
+                    Reset សារថ្មី
+                </button>
+            </div>
+        </div>
+
+        <!-- ផ្នែកខាងស្តាំ: អេក្រង់បង្ហាញលទ្ធផល -->
+        <div class="xl:col-span-5 bg-gray-50 rounded-xl border border-gray-200 p-6 flex flex-col relative overflow-hidden h-full min-h-[300px]">
+            <h2 class="text-lg font-bold text-green-800 mb-2 text-center bg-green-100 py-2 rounded-lg border border-green-200" id="display-class-name">
+                រង់ចាំទិន្នន័យ...
+            </h2>
+            
+            <div class="flex-grow flex items-center justify-center">
+                <div id="result-box" class="text-center w-full p-4">
+                    <div id="name-display" class="text-3xl md:text-4xl font-bold text-gray-300 transition-all duration-300">
+                        ?
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4 text-sm text-gray-600 border-t pt-4 space-y-2">
+                <div class="flex justify-between items-center bg-white p-2 rounded shadow-sm border-l-4 border-blue-500">
+                    <span>សិស្សនៅសល់ក្នុងថ្នាក់៖</span>
+                    <span id="total-students" class="font-bold text-blue-600 text-lg">០</span>
+                </div>
+                <div class="flex justify-between items-center bg-white p-2 rounded shadow-sm border-l-4 border-orange-500">
+                    <span>អ្នកបានជាប់ឆ្នោតសរុប៖</span>
+                    <span id="picked-students" class="font-bold text-orange-600 text-lg">០</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =======================================================
+        // សូមដាក់ URL របស់ Web App ត្រង់នេះ
+        // =======================================================
+        const API_URL = "https://script.google.com/macros/s/AKfycbz0Aue1nCxb4OskznnNcz3N9Tdr3Px4HMo73GEVfpn-4zjrfdclkWkF1-_SAxDu3dsQ/exec"; 
+        
+        let classesData = {}; 
+        let originalClassesData = {}; 
+        let activeClassName = ""; 
+        let selectedStudentsList = []; 
+
+        // មុខងារទាញយកពុម្ពគំរូ Excel (Download Template)
+        function downloadTemplate() {
+            const classes = ["7A", "7B", "7C", "8A", "8B", "8C", "9A", "9B", "10A", "10B", "10C", "11A", "11B", "11C", "12A", "12B"];
+            const workbook = XLSX.utils.book_new();
+
+            classes.forEach(className => {
+                const sampleData = [
+                    {"ឈ្មោះសិស្ស": `សិស្សសាកល្បងទី១ (${className})`},
+                    {"ឈ្មោះសិស្ស": `សិស្សសាកល្បងទី២ (${className})`},
+                    {"ឈ្មោះសិស្ស": `សិស្សសាកល្បងទី៣ (${className})`}
+                ];
+                const worksheet = XLSX.utils.json_to_sheet(sampleData);
+                worksheet['!cols'] = [{ wch: 30 }]; 
+                XLSX.utils.book_append_sheet(workbook, worksheet, className);
+            });
+
+            XLSX.writeFile(workbook, "គំរូបញ្ជីឈ្មោះសិស្ស.xlsx");
+        }
+
+        // ១. ទាញទិន្នន័យបញ្ជីឈ្មោះពី Google Sheet
+        async function fetchDataFromGoogleSheet() {
+            const btn = document.getElementById('btn-fetch-gs');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="text-xs text-blue-700 font-bold mb-1">កំពុងទាញ...</span>';
+            btn.disabled = true;
+            document.getElementById('display-class-name').innerText = "កំពុងភ្ជាប់ទៅកាន់ Google Sheets...";
+
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                
+                if(Object.keys(data).length === 0) {
+                    alert("មិនមានទិន្នន័យក្នុង Sheet 'Students' ទេ។ សូម Import Excel រួច Upload បញ្ចូលជាមុនសិន។");
+                    document.getElementById('display-class-name').innerText = "គ្មានទិន្នន័យ";
+                    return;
+                }
+
+                classesData = {}; originalClassesData = {}; 
+                Object.keys(data).forEach(className => {
+                    classesData[className] = data[className];
+                    originalClassesData[className] = [...data[className]];
+                });
+
+                document.getElementById('btn-reset').removeAttribute('disabled');
+                document.getElementById('btn-upload-gs').removeAttribute('disabled');
+                renderTabs(Object.keys(data));
+                alert("ទាញទិន្នន័យបញ្ជីឈ្មោះសិស្សជោគជ័យ!");
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                alert("មានបញ្ហាក្នុងការទាញទិន្នន័យ។ សូមពិនិត្យ API_URL");
+                document.getElementById('display-class-name').innerText = "បរាជ័យ";
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        // ២. Upload បញ្ជីឈ្មោះសិស្ស ទៅកាន់ Google Sheet
+        async function uploadStudentsToGoogleSheet() {
+            if (Object.keys(originalClassesData).length === 0) {
+                alert("មិនមានទិន្នន័យសិស្សត្រូវ Upload ទេ។ សូម Import ពី Excel សិន។");
+                return;
+            }
+            if(!confirm("តើអ្នកពិតជាចង់ Upload បញ្ជីឈ្មោះនេះទៅ Google Sheet មែនទេ? (វានឹងលុបទិន្នន័យចាស់ក្នុង Sheet នោះចោល)")) return;
+
+            const btn = document.getElementById('btn-upload-gs');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="text-xs text-orange-700 font-bold mb-1">កំពុង Upload...</span>';
+            btn.disabled = true;
+
+            const payload = {
+                action: "uploadStudents",
+                data: originalClassesData
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if(result.status === 'success') {
+                    alert("បាន Upload បញ្ជីឈ្មោះសិស្សទៅ Google Sheet ជោគជ័យ!");
+                }
+            } catch (error) {
+                console.error("Error uploading students:", error);
+                alert("បរាជ័យក្នុងការ Upload ទិន្នន័យ។");
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        // ៣. Save ឈ្មោះសិស្សដែលបានជាប់ឆ្នោត ទៅកាន់ Google Sheet
+        async function saveResultsToGoogleSheet() {
+            if (selectedStudentsList.length === 0) {
+                alert("មិនទាន់មានសិស្សជាប់ឆ្នោតត្រូវរក្សាទុកទេ!");
+                return;
+            }
+            
+            const btn = document.getElementById('btn-save-gs');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<span class="text-xs font-bold text-white">កំពុង Save...</span>';
+            btn.disabled = true;
+
+            const payload = {
+                action: "saveResults",
+                data: selectedStudentsList
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "text/plain;charset=utf-8" },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if(result.status === 'success') {
+                    alert("បាន Save លទ្ធផលអ្នកឈ្នះទៅកាន់ Google Sheet ជោគជ័យ!");
+                }
+            } catch (error) {
+                console.error("Error saving results:", error);
+                alert("បរាជ័យក្នុងការ Save លទ្ធផល។");
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        // ---------------------------------------------------------
+        // មុខងារចាស់ៗទាក់ទងនឹងប្រព័ន្ធ Random
+        // ---------------------------------------------------------
+        function importExcel(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                classesData = {}; originalClassesData = {}; 
+                workbook.SheetNames.forEach(sheetName => {
+                    const worksheet = workbook.Sheets[sheetName];
+                    const json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+                    let students = json.map(row => row[0]).filter(name => name && name.toString().trim() !== "");
+                    if(students.length > 0 && (students[0].toLowerCase().includes('name') || students[0].includes('ឈ្មោះ') || students[0].includes('ល.រ'))) {
+                        students.shift();
+                    }
+                    if(students.length > 0) {
+                        classesData[sheetName] = students;
+                        originalClassesData[sheetName] = [...students];
+                    }
+                });
+                document.getElementById('btn-reset').removeAttribute('disabled');
+                document.getElementById('btn-upload-gs').removeAttribute('disabled');
+                renderTabs(Object.keys(classesData));
+                alert("បាន Import បញ្ជីឈ្មោះពី Excel ចូលប្រព័ន្ធ។ លោកអ្នកអាច Upload វាទៅកាន់ Google Sheet បាន។");
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function renderTabs(sheetNames) {
+            const tabsContainer = document.getElementById('tabs-container');
+            tabsContainer.innerHTML = ''; 
+            sheetNames.forEach((sheetName, index) => {
+                const btn = document.createElement('button');
+                btn.innerText = sheetName;
+                btn.className = `tab-btn px-3 py-1.5 border rounded-md text-sm font-semibold focus:outline-none flex-grow sm:flex-grow-0 text-center shadow-sm`;
+                btn.onclick = () => selectClass(sheetName, btn);
+                tabsContainer.appendChild(btn);
+                if (index === 0) selectClass(sheetName, btn);
+            });
+        }
+
+        function selectClass(className, clickedBtn) {
+            activeClassName = className;
+            document.querySelectorAll('.tab-btn').forEach(tab => {
+                tab.classList.remove('tab-active');
+                tab.classList.add('tab-inactive');
+            });
+            clickedBtn.classList.remove('tab-inactive');
+            clickedBtn.classList.add('tab-active');
+            document.getElementById('display-class-name').innerText = "ថ្នាក់កំពុងរើស៖ " + className;
+            document.getElementById('name-display').innerText = "?";
+            document.getElementById('name-display').classList.remove('winner-pop', 'text-green-700');
+            document.getElementById('name-display').classList.add('text-gray-300');
+            
+            const studentsLeft = classesData[className] ? classesData[className].length : 0;
+            document.getElementById('total-students').innerText = studentsLeft;
+            if (studentsLeft > 0) document.getElementById('btn-random').removeAttribute('disabled');
+            else document.getElementById('btn-random').setAttribute('disabled', 'true');
+        }
+
+        function startRandom() {
+            const currentStudents = classesData[activeClassName];
+            if (!currentStudents || currentStudents.length === 0) return;
+
+            const nameDisplay = document.getElementById('name-display');
+            const btnRandom = document.getElementById('btn-random');
+            
+            nameDisplay.classList.remove('winner-pop', 'text-green-700');
+            nameDisplay.classList.add('text-gray-400');
+            btnRandom.setAttribute('disabled', 'true');
+            document.querySelectorAll('.tab-btn').forEach(tab => tab.setAttribute('disabled', 'true'));
+
+            let times = 0;
+            const interval = setInterval(() => {
+                nameDisplay.innerText = currentStudents[Math.floor(Math.random() * currentStudents.length)];
+                times++;
+                if (times >= 20) {
+                    clearInterval(interval);
+                    const finalIndex = Math.floor(Math.random() * currentStudents.length);
+                    const winnerName = currentStudents[finalIndex];
+                    
+                    nameDisplay.innerText = winnerName;
+                    nameDisplay.classList.remove('text-gray-400');
+                    nameDisplay.classList.add('text-green-700', 'winner-pop');
+                    
+                    triggerCongratulationConfetti();
+                    selectedStudentsList.push({ "ថ្នាក់": activeClassName, "ឈ្មោះសិស្ស": winnerName });
+                    classesData[activeClassName].splice(finalIndex, 1); 
+                    
+                    document.getElementById('total-students').innerText = classesData[activeClassName].length;
+                    document.getElementById('picked-students').innerText = selectedStudentsList.length;
+                    
+                    document.getElementById('btn-export').removeAttribute('disabled');
+                    document.getElementById('btn-save-gs').removeAttribute('disabled');
+                    document.querySelectorAll('.tab-btn').forEach(tab => tab.removeAttribute('disabled'));
+                    if(classesData[activeClassName].length > 0) btnRandom.removeAttribute('disabled');
+                }
+            }, 80);
+        }
+
+        function triggerCongratulationConfetti() {
+            var end = Date.now() + 2000;
+            (function frame() {
+                confetti({ particleCount: 4, angle: 60, spread: 55, origin: { x: 0, y: 0.8 }});
+                confetti({ particleCount: 4, angle: 120, spread: 55, origin: { x: 1, y: 0.8 }});
+                if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+        }
+
+        function resetSystem() {
+            if (Object.keys(originalClassesData).length === 0) return;
+            if (confirm("តើអ្នកពិតជាចង់ចាប់ផ្តើមឡើងវិញមែនទេ? ទិន្នន័យដែលបានរ៉េនដឹងរួចនឹងត្រូវសម្អាតចោលពីអេក្រង់។")) {
+                classesData = {};
+                for (let sheetName in originalClassesData) {
+                    classesData[sheetName] = [...originalClassesData[sheetName]];
+                }
+                selectedStudentsList = [];
+                document.getElementById('picked-students').innerText = "0";
+                document.getElementById('btn-export').setAttribute('disabled', 'true');
+                document.getElementById('btn-save-gs').setAttribute('disabled', 'true');
+                
+                if (activeClassName) selectClass(activeClassName, document.querySelector('.tab-active'));
+            }
+        }
+
+        function exportExcel() {
+            if (selectedStudentsList.length === 0) return;
+            const worksheet = XLSX.utils.json_to_sheet(selectedStudentsList);
+            worksheet['!cols'] = [{ wch: 15 }, { wch: 30 }];
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "លទ្ធផលអ្នកឈ្នះ");
+            XLSX.writeFile(workbook, "លទ្ធផលសិស្សដែលបានជ្រើសរើស.xlsx");
+        }
+    </script>
+</body>
+</html>
